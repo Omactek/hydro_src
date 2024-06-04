@@ -28,7 +28,6 @@ class ChartDataForm(forms.Form):
         values = hydro_models.ValuesMetadata.objects.filter(django_field_name__in=fields)
         self.fields['value'].choices = [(v.django_field_name, v.parameter) for v in values]
         print(self.fields['value'].choices)
-        self.clean_value()
         print(self.is_valid)  # This will trigger re-validation
         print(self.cleaned_data)
         print(self.cleaned_data.get('value'))
