@@ -453,7 +453,7 @@ class PtaiPotokIsco(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'ptaсi_potok_isco'
+        db_table = 'ptaci_potok_isco'
 
 
 class RanklovskyPotok(models.Model):
@@ -468,6 +468,17 @@ class RanklovskyPotok(models.Model):
         managed = False
         db_table = 'ranklovsky_potok'
 
+class RoklanskyHajenka(models.Model):
+    wl_mm = models.FloatField(db_column='WL_mm', blank=True, null=True)  # Field name made lowercase.
+    ec_lin_micros_cm = models.FloatField(db_column='EC_lin_microS/cm', blank=True, null=True)  # Field name made lowercase. Field renamed to remove unsuitable characters.
+    ec_nonlin_micros_cm = models.FloatField(db_column='EC_nonlin_microS/cm', blank=True, null=True)  # Field name made lowercase. Field renamed to remove unsuitable characters.
+    ec_uncomp_micros_cm = models.FloatField(db_column='EC_uncomp_microS/cm', blank=True, null=True)  # Field name made lowercase. Field renamed to remove unsuitable characters.
+    wt_degc = models.FloatField(db_column='WT_degC', blank=True, null=True)  # Field name made lowercase.
+    date_time = models.DateTimeField(primary_key=True)
+
+    class Meta:
+        managed = False
+        db_table = 'roklansky_hajenka'
 
 class RoklanskyPot(models.Model):
     wl_mm = models.FloatField(db_column='WL_mm', blank=True, null=True)  # Field name made lowercase.
@@ -553,7 +564,7 @@ class SlatinnyPotok(models.Model):
 
 
 class StationMetadata(models.Model):
-    st_name = models.TextField(blank=True, null=True)
+    st_name = models.TextField(blank=True, primary_key=True) #added primary key
     st_label = models.TextField(blank=True, null=True)
     lat = models.FloatField(blank=True, null=True)
     long = models.FloatField(blank=True, null=True)

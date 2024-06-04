@@ -2,20 +2,32 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hello World</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-    </style>
+    <title>Chart Data Form</title>
 </head>
 <body>
-    <h1>Hello, World!</h1>
+    <h1>Select Station</h1>
+    <form id="stationForm" method="post" action="{% url 'my_form_view' %}">
+        {% csrf_token %}
+        {{ form.as_p }}
+    </form>
+
+    {% if success %}
+        <h2>Form Submitted Successfully!</h2>
+        <p>Selected Station: {{ station }}</p>
+        <p>Selected Value: {{ value }}</p> <!-- station_label currently not assigned -->
+    {% endif %}
 </body>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var dropdowns = [document.getElementById("id_station_name"), document.getElementById("id_value")];
+        dropdowns.forEach(function(dropdown) {
+            if (dropdown) {
+                dropdown.addEventListener("change", function() {
+                    console.log("Dropdown changed, submitting form...");
+                    document.getElementById("stationForm").submit();
+                });
+            }
+        });
+    });
+</script>
 </html>

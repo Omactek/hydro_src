@@ -1,18 +1,32 @@
 from django.shortcuts import render
-from .models import ValuesMetadata, StationMetadata
+#from .models import ValuesMetadata, StationMetadata
+from hydro import models as hydro_models
+from django.http import HttpResponse, JsonResponse
+from django.views import View
 from django.apps import apps
+from django.db.models.functions import ExtractYear
+from .forms import ChartDataForm
+from django.views.generic.edit import FormView
 
-def metadata(request):
-    #retrieve station names and labels from StationMetadata
-    station_metadata = StationMetadata.objects.all()
-    #retrieve values metadata from ValuesMetadata
-    values_metadata = ValuesMetadata.objects.all()
-    list = ["water_level", "air_temperature"]
-    values_metadata = ValuesMetadata.objects.filter(parameter_abreviation_in_data_file__in=list)
+class MyFormView(FormView):
+    template_name = 'test_template.html'
+    form_class = ChartDataForm
+    success_url = 'succes/'
 
-    context = {
-        'station_metadata': station_metadata,  #pass station metadata to the template
-        'values_metadata': values_metadata, #pass values metadata to the template
-    }
+    def form_valid(self, form):
+        if form.is_valid():
+            print('form is valid')
+        form.get_station_model()
+        form.update_value_choices()
+        station_name = form.cleaned_data['station_name']
 
-    return render(request, 'dynamic_chart.html', context)
+        return self.render_to_response(self.get_context_data(
+            form=form,
+            station=station_name,
+            station_model=form.model,
+            value=form.cleaned_data['value'],
+            success=True
+        ))
+    def form_invalid(self, form):
+        print("Form invalid, errors:", form.errors)
+        return self.render_to_response(self.get_context_data(form=form))
