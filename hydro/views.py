@@ -18,14 +18,19 @@ class MyFormView(FormView):
             print('form is valid')
         form.get_station_model()
         form.update_value_choices()
+        station_model = form.model
         station_name = form.cleaned_data['station_name']
+        value = form.cleaned_data['value']
+        auto_submit = form.cleaned_data['auto_submit']
+
 
         return self.render_to_response(self.get_context_data(
             form=form,
             station=station_name,
-            station_model=form.model,
-            value=form.cleaned_data['value'],
-            success=True
+            station_model=station_model,
+            value=value,
+            success=True,
+            auto_submit = auto_submit,
         ))
     def form_invalid(self, form):
         print("Form invalid, errors:", form.errors)

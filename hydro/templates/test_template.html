@@ -6,28 +6,53 @@
 </head>
 <body>
     <h1>Select Station</h1>
-    <form id="stationForm" method="post" action="{% url 'my_form_view' %}" onchange="this.form.submit()">
+    <form id="stationForm" method="post" action="{% url 'my_form_view' %}">
         {% csrf_token %}
-        {{ form.as_p }}
+        {{ form.station_name }}
+        {{ form.value }}
+        {{ form.auto_submit }} <!-- Include auto_submit field here -->
     </form>
 
     {% if success %}
         <h2>Form Submitted Successfully!</h2>
         <p>Selected Station: {{ station }}</p>
-        <p>Selected Value: {{ value }}</p> <!-- station_label currently not assigned -->
+        <p>Selected Value: {{ value }}</p>
+        <p>Selected Submit: {{ auto_submit }}</p>
     {% endif %}
 </body>
 <script>
+    // Function to check if auto_submit is true and execute actions accordingly
+    function checkAutoSubmit() {
+        var submitField = document.getElementById("id_auto_submit");
+        if (submitField.value === "true") {
+            submitField.value = "false";
+            document.getElementById("stationForm").submit();
+        }
+    }
+
+    checkAutoSubmit();
+
+    // Script for station_name dropdown
     document.addEventListener("DOMContentLoaded", function() {
-        var dropdowns = [document.getElementById("id_station_name"), document.getElementById("id_value")];
-        dropdowns.forEach(function(dropdown) {
-            if (dropdown) {
-                dropdown.addEventListener("change", function() {
-                    console.log("Dropdown changed, submitting form...");
-                    document.getElementById("stationForm").submit();
-                });
-            }
-        });
+        var stationDropdown = document.getElementById("id_station_name");
+        var submitField = document.getElementById("id_auto_submit");
+        if (stationDropdown) {
+            stationDropdown.addEventListener("change", function() {
+                submitField.value = "true";
+                document.getElementById("stationForm").submit();
+            });
+        }
+    });
+    // Script for value dropdown
+    document.addEventListener("DOMContentLoaded", function() {
+        var valueDropdown = document.getElementById("id_value");
+        var submitField = document.getElementById("id_auto_submit")
+        if (valueDropdown || submitField.value === "true") {
+            valueDropdown.addEventListener("change", function() {
+                submitField.value = "false";
+                document.getElementById("stationForm").submit();
+            });
+        }
     });
 </script>
 </html>
