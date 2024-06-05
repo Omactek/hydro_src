@@ -18,12 +18,10 @@ class ChartDataForm(forms.Form):
         station_name = hydro_models.StationMetadata.objects.get(st_name=station_name).st_name
         self.model = self.get_model_from_table(station_name)
         return self.model
-    
+
     def update_value_choices(self):
         # This method updates the 'choices' attribute of the 'value' field
-        if not hasattr(self, 'model'):
-            self.get_station_model()
-        self.is_valid
+        self.get_station_model()
         fields = [field.name for field in self.model._meta.fields]
         values = hydro_models.ValuesMetadata.objects.filter(django_field_name__in=fields)
         self.fields['value'].choices = [(v.django_field_name, v.parameter) for v in values]

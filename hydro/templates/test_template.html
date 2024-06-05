@@ -6,7 +6,7 @@
 </head>
 <body>
     <h1>Select Station</h1>
-    <form id="stationForm" method="post" action="{% url 'my_form_view' %}">
+    <form id="stationForm" method="post" action="{% url 'my_form_view' %}" onchange="this.form.submit()">
         {% csrf_token %}
         {{ form.as_p }}
     </form>
