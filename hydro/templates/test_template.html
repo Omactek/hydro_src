@@ -10,46 +10,35 @@
         {% csrf_token %}
         {{ form.station_name }}
         {{ form.value }}
-        {{ form.auto_submit }} <!-- Include auto_submit field here -->
+        {{ form.station_name_change }} 
     </form>
 
     {% if success %}
         <h2>Form Submitted Successfully!</h2>
         <p>Selected Station: {{ station }}</p>
         <p>Selected Value: {{ value }}</p>
-        <p>Selected Submit: {{ auto_submit }}</p>
+        <p>Did station change? {{ station_name_change }}</p>
     {% endif %}
 </body>
 <script>
-    // Function to check if auto_submit is true and execute actions accordingly
-    function checkAutoSubmit() {
-        var submitField = document.getElementById("id_auto_submit");
-        if (submitField.value === "true") {
-            submitField.value = "false";
-            document.getElementById("stationForm").submit();
-        }
-    }
-
-    checkAutoSubmit();
-
     // Script for station_name dropdown
-    document.addEventListener("DOMContentLoaded", function() {
+    document.addEventListener("DOMContentLoaded", function() { ///muzu mit jen jeden
         var stationDropdown = document.getElementById("id_station_name");
-        var submitField = document.getElementById("id_auto_submit");
+        var station_change_field = document.getElementById("id_station_name_change");
         if (stationDropdown) {
             stationDropdown.addEventListener("change", function() {
-                submitField.value = "true";
+                station_change_field.value = true;
                 document.getElementById("stationForm").submit();
             });
         }
     });
     // Script for value dropdown
-    document.addEventListener("DOMContentLoaded", function() {
+    document.addEventListener("DOMContentLoaded", function() { 
         var valueDropdown = document.getElementById("id_value");
-        var submitField = document.getElementById("id_auto_submit")
-        if (valueDropdown || submitField.value === "true") {
+        var station_change_field = document.getElementById("id_station_name_change");
+        if (valueDropdown) {
             valueDropdown.addEventListener("change", function() {
-                submitField.value = "false";
+                station_change_field.value = false;
                 document.getElementById("stationForm").submit();
             });
         }
