@@ -15,11 +15,12 @@ class MyFormView(FormView):
 
     def form_valid(self, form):
         form.is_valid()
-        #form.get_station_model()
         form.update_value_choices()
+        form.update_year_choices()
         station_model = form.model
         station_name = form.cleaned_data['station_name']
         value = form.cleaned_data['value']
+        year = form.cleaned_data['year']
 
 
         return self.render_to_response(self.get_context_data(
@@ -28,6 +29,7 @@ class MyFormView(FormView):
             station_model=station_model,
             value=value,
             success=True,
+            year=year,
         ))
     def form_invalid(self, form):
         print("Form invalid, errors:", form.errors)

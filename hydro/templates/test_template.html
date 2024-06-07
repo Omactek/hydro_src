@@ -10,7 +10,8 @@
         {% csrf_token %}
         {{ form.station_name }}
         {{ form.value }}
-        {{ form.station_name_change }} 
+        {{ form.station_name_change }}
+        {{ form.year }} 
     </form>
 
     {% if success %}
@@ -18,26 +19,29 @@
         <p>Selected Station: {{ station }}</p>
         <p>Selected Value: {{ value }}</p>
         <p>Did station change? {{ station_name_change }}</p>
+        <p>Selected year: {{ year }}</p>
     {% endif %}
 </body>
 <script>
-    // Script for station_name dropdown
-    document.addEventListener("DOMContentLoaded", function() { ///muzu mit jen jeden
+    document.addEventListener("DOMContentLoaded", function() {
         var stationDropdown = document.getElementById("id_station_name");
+        var valueDropdown = document.getElementById("id_value");
         var station_change_field = document.getElementById("id_station_name_change");
+        var yearDropdown = document.getElementById("id_year");
         if (stationDropdown) {
             stationDropdown.addEventListener("change", function() {
                 station_change_field.value = true;
                 document.getElementById("stationForm").submit();
             });
         }
-    });
-    // Script for value dropdown
-    document.addEventListener("DOMContentLoaded", function() { 
-        var valueDropdown = document.getElementById("id_value");
-        var station_change_field = document.getElementById("id_station_name_change");
         if (valueDropdown) {
             valueDropdown.addEventListener("change", function() {
+                station_change_field.value = false;
+                document.getElementById("stationForm").submit();
+            });
+        }
+        if (yearDropdown) {
+            yearDropdown.addEventListener("change", function() {
                 station_change_field.value = false;
                 document.getElementById("stationForm").submit();
             });
