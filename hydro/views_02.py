@@ -19,7 +19,6 @@ class StationMetadataViewSet(viewsets.ReadOnlyModelViewSet):
         fields = [field.name for field in model._meta.fields]
         values = hydro_models.ValuesMetadata.objects.filter(django_field_name__in=fields)
         serializer = ValuesMetadataSerializer(values, many=True)
-        print(values)
         return Response(serializer.data)
 
     @action(detail=True, methods=['get'])
