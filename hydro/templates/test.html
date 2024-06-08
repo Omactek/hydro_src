@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Chart Data Form</title>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const stationDropdown = document.getElementById("stationDropdown");
+            const valueDropdown = document.getElementById("valueDropdown");
+            const yearDropdown = document.getElementById("yearDropdown");
+            const resultDiv = document.getElementById("result");
+            const form = document.getElementById("stationForm");
+
+            function fetchStations() {
+                fetch('/api/stations/')
+                    .then(response => response.json())
+                    .then(data => {
+                        data.forEach(station => {
+                            const option = document.createElement("option");
+                            option.value = station.st_name;
+                            option.textContent = station.st_label;
+                            stationDropdown.appendChild(option);
+                        });
+                        fetchValuesAndYears();
+                    })
+                    .catch(error => console.error('Error fetching stations:', error));
+            }
+
+            function fetchValuesAndYears() {
+                const stationId = stationDropdown.value;
+                fetch(`/api/stations/${stationId}/values/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        valueDropdown.innerHTML = "";
+                        data.forEach(value => {
+                            const option = document.createElement("option");
+                            option.value = value.django_field_name;
+                            option.textContent = value.parameter;
+                            valueDropdown.appendChild(option);
+                        });
+                        updateResult();
+                    })
+                    .catch(error => console.error('Error fetching values:', error));
+
+                fetch(`/api/stations/${stationId}/years/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        yearDropdown.innerHTML = "";
+                        data.forEach(year => {
+                            const option = document.createElement("option");
+                            option.value = year;
+                            option.textContent = year;
+                            yearDropdown.appendChild(option);
+                        });
+                    })
+                    .catch(error => console.error('Error fetching years:', error));
+            }
+
+            function updateResult() {
+                const selectedStation = stationDropdown.options[stationDropdown.selectedIndex].text;
+                const selectedValue = valueDropdown.options[valueDropdown.selectedIndex].text;
+                const selectedYear = yearDropdown.options[yearDropdown.selectedIndex].text;
+                alert("vole")
+
+                resultDiv.innerHTML = `
+                    <h2>Form Submitted Successfully!</h2>
+                    <p>Selected Station: ${selectedStation}</p>
+                    <p>Selected Value: ${selectedValue}</p>
+                    <p>Selected Year: ${selectedYear}</p>
+                `;
+            }
+
+            stationDropdown.addEventListener("change", () => {
+                fetchValuesAndYears();
+            });
+
+            valueDropdown.addEventListener("change", updateResult);
+            yearDropdown.addEventListener("change", updateResult);
+
+            form.addEventListener("submit", function(event) {
+                event.preventDefault();
+                updateResult();
+            });
+
+            fetchStations();
+        });
+    </script>
+</head>
+<body>
+    <h1>Select Station</h1>
+    <form id="stationForm">
+        <select id="stationDropdown"></select>
+        <select id="valueDropdown"></select>
+        <select id="yearDropdown"></select>
+    </form>
+
+    <div id="result"></div>
+</body>
+</html>
