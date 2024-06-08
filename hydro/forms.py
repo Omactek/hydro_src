@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError
 from django.apps import apps
 from django.db.models.functions import ExtractYear
 import datetime
-
+from django.db.models import Max
 
 class ChartDataForm(forms.Form):
     station_name = forms.ChoiceField(choices=[(station.st_name, station.st_label) for station in hydro_models.StationMetadata.objects.all()], label="Select Station")
@@ -12,12 +12,29 @@ class ChartDataForm(forms.Form):
     station_name_change = forms.BooleanField(required=False, widget=forms.HiddenInput() )
     year = forms.ChoiceField(label="Select year", required=False)
 
-    def __init__(self, *args, **kwargs): #what if i populate it all with one model?
-        super(ChartDataForm, self).__init__(*args, **kwargs)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.set_initial_station_name()
+        self.set_initial_year_choices()
+
+    def set_initial_station_name(self):
+        first_station = hydro_models.StationMetadata.objects.first()
+        self.fields['station_name'].initial = first_station.st_name
+
+    def set_initial_value(self):
+        first_station = hydro_models.StationMetadata.objects.first()
+        first_model = self.get_model_from_table(first_station.st_name)
+        fields = [field.name for field in first_model._meta.fields]
+        self.fields['value'].initial = fields[0]
+
+    def set_initial_year_choices(self):
         current_year = datetime.date.today().year
         initial_years = [(str(year), year) for year in range(1980, current_year + 1)]
         self.fields['year'].choices = initial_years
-        self.fields['year'].initial = '2008'
+        first_station = hydro_models.StationMetadata.objects.first()
+        first_model = self.get_model_from_table(first_station.st_name)
+        max_year = first_model.objects.annotate(year=ExtractYear('date_time')).aggregate(Max('year'))['year__max']
+        self.fields['year'].initial = max_year
 
     def clean(self): 
         cleaned_data = super().clean()
@@ -41,7 +58,6 @@ class ChartDataForm(forms.Form):
 
     def update_year_choices(self):
         self.get_station_model()
-        print(f"toto je model: {self.model}")
         queryset = self.model.objects.all()
         years = sorted(queryset.annotate(year=ExtractYear('date_time')).values_list('year', flat=True).distinct())
         choices = [(year, year) for year in years]  # Creating tuples of (year, year)

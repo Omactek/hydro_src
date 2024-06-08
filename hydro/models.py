@@ -236,10 +236,10 @@ class HrebecnaMeteo(models.Model):
     gt05_degc = models.FloatField(db_column='GT05_degC', blank=True, null=True)  # Field name made lowercase.
     at50_degc = models.FloatField(db_column='AT50_degC', blank=True, null=True)  # Field name made lowercase.
     at20_degc = models.FloatField(db_column='AT20_degC', blank=True, null=True)  # Field name made lowercase.
-    sm60_pct = models.FloatField(db_column='SM60_pct', blank=True, null=True)  # Field name made lowercase.
+    sm_neg60_pct = models.FloatField(db_column='SM60_pct', blank=True, null=True)  # Field name made lowercase.
     sm30_pct = models.FloatField(db_column='SM30_pct', blank=True, null=True)  # Field name made lowercase.
     sm15_pct = models.FloatField(db_column='SM15_pct', blank=True, null=True)  # Field name made lowercase.
-    st60_degc = models.FloatField(db_column='ST60_degC', blank=True, null=True)  # Field name made lowercase.
+    st_neg60_degc = models.FloatField(db_column='ST60_degC', blank=True, null=True)  # Field name made lowercase.
     st30_degc = models.FloatField(db_column='ST30_degC', blank=True, null=True)  # Field name made lowercase.
     st15_degc = models.FloatField(db_column='ST15_degC', blank=True, null=True)  # Field name made lowercase.
     at25_degc = models.FloatField(db_column='AT25_degC', blank=True, null=True)  # Field name made lowercase.
@@ -408,7 +408,7 @@ class Ptaci(models.Model):
     q_m3_s = models.FloatField(db_column='Q_m3/s', blank=True, null=True)  # Field name made lowercase. Field renamed to remove unsuitable characters.
     p_mm = models.FloatField(db_column='P_mm', blank=True, null=True)  # Field name made lowercase.
     hs_cm = models.FloatField(db_column='HS_cm', blank=True, null=True)  # Field name made lowercase.
-    st10_degc = models.FloatField(db_column='ST10_degC', blank=True, null=True)  # Field name made lowercase.
+    st_neg10_degc = models.FloatField(db_column='ST10_degC', blank=True, null=True)  # Field name made lowercase.
     gt05_degc = models.FloatField(db_column='GT05_degC', blank=True, null=True)  # Field name made lowercase.
     at40_degc = models.FloatField(db_column='AT40_degC', blank=True, null=True)  # Field name made lowercase.
     at80_degc = models.FloatField(db_column='AT80_degC', blank=True, null=True)  # Field name made lowercase.
