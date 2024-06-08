@@ -15,6 +15,7 @@ class ChartDataForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.set_initial_station_name()
+        self.set_initial_value()
         self.set_initial_year_choices()
 
     def set_initial_station_name(self):
