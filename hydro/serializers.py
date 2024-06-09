@@ -9,5 +9,4 @@ class StationMetadataSerializer(serializers.ModelSerializer):
 class ValuesMetadataSerializer(serializers.ModelSerializer):
     class Meta:
         model = hydro_models.ValuesMetadata
-        fields = ['django_field_name', 'parameter']
-
+        fields = ['django_field_name', 'parameter', 'unit']

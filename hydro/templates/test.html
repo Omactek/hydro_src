@@ -23,9 +23,7 @@
                             option.textContent = station.st_label;
                             stationDropdown.appendChild(option);
                         });
-                        // Automatically trigger the next fetch after stations are loaded
                         fetchValues();
-                        fetchYears();
                     })
                     .catch(error => console.error('Error fetching stations:', error));
             }
@@ -42,8 +40,8 @@
                             option.textContent = value.parameter;
                             valueDropdown.appendChild(option);
                         });
-                        // Select the first option if available
                         if (valueDropdown.options.length > 0) valueDropdown.selectedIndex = 0;
+                        fetchYears()
                     })
                     .catch(error => console.error('Error fetching values:', error));
             }
@@ -60,7 +58,6 @@
                             option.textContent = year;
                             yearDropdown.appendChild(option);
                         });
-                        // Select the first option if available
                         if (yearDropdown.options.length > 0) yearDropdown.selectedIndex = 0;
                         fetchDataAndRenderChart();  // Update the chart after updating the dropdown
                     })
@@ -73,7 +70,7 @@
                 const year = yearDropdown.value;
 
                 // Check if dropdowns have valid selections
-                if (!stationId || !valueField || !year) return alert("toto");
+                if (!stationId || !valueField || !year) return
 
                 fetch(`/api/stations/${stationId}/data/?field=${valueField}&year=${year}`)
                     .then(response => response.json())
@@ -105,16 +102,9 @@
 
             stationDropdown.addEventListener("change", function() {
                 fetchValues();
-                fetchYears();
             });
             valueDropdown.addEventListener("change", fetchDataAndRenderChart);
             yearDropdown.addEventListener("change", fetchDataAndRenderChart);
-
-            form.addEventListener("submit", function(event) {
-                event.preventDefault();
-                fetchDataAndRenderChart();
-            });
-
             fetchStations();
         });
     </script>

@@ -1,4 +1,3 @@
-# views.py
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -10,6 +9,10 @@ from django.shortcuts import render
 from rest_framework.decorators import api_view
 from django.db.models import F
 from datetime import date
+
+class ValuesMetadataViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = hydro_models.ValuesMetadata.objects.all()
+    serializer_class = ValuesMetadataSerializer
 
 class StationMetadataViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = hydro_models.StationMetadata.objects.all()
@@ -52,7 +55,6 @@ def chart_data(request, station_id):
         date=F('date_time'),
         value=F(field)
     ).values('date', 'value').order_by('date')
-
     return Response(data)
 
 def chart_data_view(request):
