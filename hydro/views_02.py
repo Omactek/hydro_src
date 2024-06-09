@@ -7,6 +7,9 @@ from .serializers import StationMetadataSerializer, ValuesMetadataSerializer
 from hydro import models as hydro_models
 from django.apps import apps
 from django.shortcuts import render
+from rest_framework.decorators import api_view
+from django.db.models import F
+from datetime import date
 
 class StationMetadataViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = hydro_models.StationMetadata.objects.all()
@@ -34,6 +37,23 @@ class StationMetadataViewSet(viewsets.ReadOnlyModelViewSet):
             if model._meta.db_table == table_name:
                 return model
         raise ValueError('No model found with db_table {}!'.format(table_name))
+
+@api_view(['GET'])
+def chart_data(request, station_id):
+    field = request.GET.get('field')
+    year = int(request.GET.get('year'))
+
+    model = StationMetadataViewSet.get_model_from_table(station_id)
+
+    start_date = date(year - 1, 11, 1)
+    end_date = date(year, 10, 30)
+
+    data = model.objects.filter(date_time__gte=start_date, date_time__lte=end_date).annotate(
+        date=F('date_time'),
+        value=F(field)
+    ).values('date', 'value').order_by('date')
+
+    return Response(data)
 
 def chart_data_view(request):
     return render(request, 'test.html')
