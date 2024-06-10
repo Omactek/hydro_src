@@ -11,6 +11,11 @@
             const yearDropdown = document.getElementById("yearDropdown");
             const form = document.getElementById("stationForm");
             const chartDiv = document.getElementById("chartDiv");
+            const lineButton = document.getElementById("lineButton");
+            const histogramButton = document.getElementById("histogramButton");
+            const boxPlotButton = document.getElementById("boxPlotButton");
+
+            let currentChartType = 'line';
 
             function fetchStations() {
                 fetch('/api/stations/')
@@ -78,17 +83,30 @@
                         const dates = data.map(item => item.date);
                         const values = data.map(item => item.value);
 
-                        const trace = {
-                            x: dates,
-                            y: values,
-                            mode: 'lines',
-                            type: 'scatter'
-                        };
+                        let trace;
+                        if (currentChartType === 'line') {
+                            trace = {
+                                x: dates,
+                                y: values,
+                                mode: 'lines',
+                                type: 'scatter'
+                            };
+                        } else if (currentChartType === 'histogram') {
+                            trace = {
+                                x: values,
+                                type: 'histogram'
+                            };
+                        } else if (currentChartType === 'box') {
+                            trace = {
+                                y: values,
+                                type: 'box'
+                            };
+                        }
 
                         const layout = {
                             title: `${valueField} in ${year}`,
                             xaxis: {
-                                title: 'Date'
+                                title: currentChartType === 'line' ? 'Date' : 'Value'
                             },
                             yaxis: {
                                 title: 'Value'
@@ -105,6 +123,22 @@
             });
             valueDropdown.addEventListener("change", fetchDataAndRenderChart);
             yearDropdown.addEventListener("change", fetchDataAndRenderChart);
+
+            lineButton.addEventListener("click", function() {
+                currentChartType = 'line';
+                fetchDataAndRenderChart();
+            });
+
+            histogramButton.addEventListener("click", function() {
+                currentChartType = 'histogram';
+                fetchDataAndRenderChart();
+            });
+
+            boxPlotButton.addEventListener("click", function() {
+                currentChartType = 'box';
+                fetchDataAndRenderChart();
+            });
+
             fetchStations();
         });
     </script>
@@ -116,6 +150,12 @@
         <select id="valueDropdown"></select>
         <select id="yearDropdown"></select>
     </form>
+
+    <div>
+        <button id="lineButton">Line Graph</button>
+        <button id="histogramButton">Histogram</button>
+        <button id="boxPlotButton">Box Plot</button>
+    </div>
 
     <div id="chartDiv"></div>
 </body>
