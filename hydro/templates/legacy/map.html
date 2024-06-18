@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Leaflet Map</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+    <style>
+        #map {
+            height: 600px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <script>
+        // Initialize the map and set its view to the specified geographical coordinates and zoom level.
+        var map = L.map('map').setView([49.8175, 15.4730], 7);
+
+        // Add a tile layer to add to our map, in this case it's an OpenStreetMap tile layer.
+        // Creating a tile layer usually involves setting the URL template for the tile images.
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+        }).addTo(map);
+
+        // Fetch station metadata and add markers to the map
+        fetch('/api/stations/geo/')
+            .then(response => response.json())
+            .then(data => {
+                // Add GeoJSON layer to the map
+                L.geoJSON(data, {
+                    onEachFeature: function (feature, layer) {
+                        if (feature.properties) {
+                            layer.bindPopup(`<b>${feature.properties.st_label}</b>`);
+                        }
+                    }
+                }).addTo(map);
+            })
+            .catch(error => console.error('Error fetching GeoJSON data:', error));
+    </script>
+</body>
+</html>

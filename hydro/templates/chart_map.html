@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Station Map and Chart</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        #map {
+            height: 400px;
+            width: 22%;
+            float: left;
+            border: 2px solid #ccc;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        #chartDiv {
+            height: 600px;
+            width: 75%;
+            float: left;
+        }
+        body, html {
+            height: 100%;
+            margin: 0;
+        }
+        .container {
+            height: 100%;
+        }
+        .map-container {
+            height: 100%;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <div>
+        <h1>Select Station</h1>
+        <form id="stationForm">
+            <select id="stationDropdown"></select>
+            <select id="valueDropdown"></select>
+            <select id="yearDropdown"></select>
+        </form>
+        <div>
+            <button id="lineButton">Line Graph</button>
+            <button id="histogramButton">Histogram</button>
+            <button id="boxPlotButton">Box Plot</button>
+        </div>
+    </div>
+    <div id="chartDiv"></div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const stationDropdown = document.getElementById("stationDropdown");
+            const valueDropdown = document.getElementById("valueDropdown");
+            const yearDropdown = document.getElementById("yearDropdown");
+            const form = document.getElementById("stationForm");
+            const chartDiv = document.getElementById("chartDiv");
+            const lineButton = document.getElementById("lineButton");
+            const histogramButton = document.getElementById("histogramButton");
+            const boxPlotButton = document.getElementById("boxPlotButton");
+
+            let currentChartType = 'line';
+            let stationsData = {};
+
+            var map = L.map('map').setView([49.8175, 15.4730], 7); // centered on the Czech Republic
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+            }).addTo(map);
+
+            fetch('/api/stations/geo/')
+                .then(response => response.json())
+                .then(data => {
+                    L.geoJSON(data, {
+                        onEachFeature: function (feature, layer) {
+                            if (feature.properties) {
+                                layer.bindPopup(`<b>${feature.properties.st_label}</b>`);
+                            }
+                            layer.on('click', function () {
+                                stationDropdown.value = feature.id;
+                                fetchValues();
+                                zoomToStation(feature.id);
+                            });
+                        }
+                    }).addTo(map);
+
+                    // store station data for later use
+                    data.features.forEach(feature => {
+                        stationsData[feature.id] = feature.geometry.coordinates;
+                    });
+                })
+                .catch(error => console.error('Error fetching GeoJSON data:', error));
+
+            function zoomToStation(stationId) {
+                const coordinates = stationsData[stationId];
+                if (coordinates) {
+                    map.setView([coordinates[1], coordinates[0]], 13); // leaflet uses [lat, lng]
+                }
+            }
+
+            function fetchStations() {
+                fetch('/api/stations/')
+                    .then(response => response.json())
+                    .then(data => {
+                        stationDropdown.innerHTML = "";  // clear previous options
+                        data.forEach(station => {
+                            const option = document.createElement("option");
+                            option.value = station.st_name;
+                            option.textContent = station.st_label;
+                            stationDropdown.appendChild(option);
+                        });
+                        fetchValues();
+                    })
+                    .catch(error => console.error('Error fetching stations:', error));
+            }
+
+            function fetchValues() {
+                const stationId = stationDropdown.value;
+                fetch(`/api/stations/${stationId}/values/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        valueDropdown.innerHTML = "";  // clear previous options
+                        data.forEach(value => {
+                            const option = document.createElement("option");
+                            option.value = value.django_field_name;
+                            option.textContent = value.parameter;
+                            valueDropdown.appendChild(option);
+                        });
+                        if (valueDropdown.options.length > 0) valueDropdown.selectedIndex = 0;
+                        fetchYears();
+                    })
+                    .catch(error => console.error('Error fetching values:', error));
+            }
+
+            function fetchYears() {
+                const stationId = stationDropdown.value;
+                fetch(`/api/stations/${stationId}/years/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        yearDropdown.innerHTML = "";  // clear previous options
+                        data.forEach(year => {
+                            const option = document.createElement("option");
+                            option.value = year;
+                            option.textContent = year;
+                            yearDropdown.appendChild(option);
+                        });
+                        if (yearDropdown.options.length > 0) yearDropdown.selectedIndex = 0;
+                        fetchDataAndRenderChart();  // update the chart after updating the dropdown
+                    })
+                    .catch(error => console.error('Error fetching years:', error));
+            }
+
+            function fetchDataAndRenderChart() {
+                const stationId = stationDropdown.value;
+                const valueField = valueDropdown.value;
+                const year = yearDropdown.value;
+
+                // check if dropdowns have valid selections
+                if (!stationId || !valueField || !year) return;
+
+                fetch(`/api/stations/${stationId}/data/?field=${valueField}&year=${year}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const dates = data.map(item => item.date);
+                        const values = data.map(item => item.value);
+
+                        let trace;
+                        if (currentChartType === 'line') {
+                            trace = {
+                                x: dates,
+                                y: values,
+                                mode: 'lines',
+                                type: 'scatter'
+                            };
+                        } else if (currentChartType === 'histogram') {
+                            trace = {
+                                x: values,
+                                type: 'histogram'
+                            };
+                        } else if (currentChartType === 'box') {
+                            trace = {
+                                y: values,
+                                type: 'box'
+                            };
+                        }
+
+                        const layout = {
+                            title: `${valueField} in ${year}`,
+                            xaxis: {
+                                title: currentChartType === 'line' ? 'Date' : 'Value'
+                            },
+                            yaxis: {
+                                title: 'Value'
+                            }
+                        };
+
+                        Plotly.newPlot(chartDiv, [trace], layout);
+                    })
+                    .catch(error => console.error('Error fetching chart data:', error));
+            }
+
+            stationDropdown.addEventListener("change", function() {
+                fetchValues();
+                zoomToStation(stationDropdown.value);
+            });
+            valueDropdown.addEventListener("change", fetchDataAndRenderChart);
+            yearDropdown.addEventListener("change", fetchDataAndRenderChart);
+
+            lineButton.addEventListener("click", function() {
+                currentChartType = 'line';
+                fetchDataAndRenderChart();
+            });
+
+            histogramButton.addEventListener("click", function() {
+                currentChartType = 'histogram';
+                fetchDataAndRenderChart();
+            });
+
+            boxPlotButton.addEventListener("click", function() {
+                currentChartType = 'box';
+                fetchDataAndRenderChart();
+            });
+
+            fetchStations();
+        });
+    </script>
+</body>
+</html>

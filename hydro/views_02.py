@@ -2,13 +2,14 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db.models.functions import ExtractYear
-from .serializers import StationMetadataSerializer, ValuesMetadataSerializer
+from .serializers import StationMetadataSerializer, ValuesMetadataSerializer, StationGeoSerializer
 from hydro import models as hydro_models
 from django.apps import apps
 from django.shortcuts import render
 from rest_framework.decorators import api_view
 from django.db.models import F
 from datetime import date
+from django.db.models import Count
 
 class ValuesMetadataViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = hydro_models.ValuesMetadata.objects.all()
@@ -27,12 +28,17 @@ class StationMetadataViewSet(viewsets.ReadOnlyModelViewSet):
         serializer = ValuesMetadataSerializer(values, many=True)
         return Response(serializer.data)
 
-    @action(detail=True, methods=['get'])
+    @action(detail=True, methods=['get']) #will need filtration based on values?
     def years(self, request, pk=None):
         station = self.get_object()
         model = self.get_model_from_table(station.st_name)
         years = sorted(model.objects.annotate(year=ExtractYear('date_time')).values_list('year', flat=True).distinct())
         return Response(years)
+    
+    @action(detail=False, methods=['get'])
+    def geo(self, request):
+        serializer = StationGeoSerializer(self.queryset, many=True)
+        return Response(serializer.data)
 
     @staticmethod
     def get_model_from_table(table_name):
@@ -57,5 +63,11 @@ def chart_data(request, station_id):
     ).values('date', 'value').order_by('date')
     return Response(data)
 
-def chart_data_view(request):
+"""def chart_data_view(request):
     return render(request, 'test.html')
+
+def map_view(request):
+    return render(request, 'map.html')
+""" #legacy
+def chart_map(request):
+    return render(request, 'chart_map.html')
