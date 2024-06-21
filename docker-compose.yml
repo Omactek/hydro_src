@@ -5,7 +5,7 @@ services:
       build:
          context: .
          dockerfile: Dockerfile.dev
-      container_name: Hydro-API
+      container_name: Hydro_API
       command: python3 manage.py runserver 0.0.0.0:8000
       # volumes here mounts the code to the container and updates
       # the container when a change to the source code is made.

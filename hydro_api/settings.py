@@ -90,7 +90,7 @@ DATABASES = {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': env('POSTGRES_DB'),
         'USER': env('POSTGRES_USER'),
-        'PASSWORD': env('POSTGRESS_PASS'),
+        'PASSWORD': env('POSTGRES_PASS'),
         'HOST': env('PG_HOST'), #change to localhost before deploying (windows x linux)
         'PORT': env('PG_PORT'),
     }

@@ -10,6 +10,7 @@ from rest_framework.decorators import api_view
 from django.db.models import F
 from datetime import date
 from django.db.models import Count
+import numpy as np
 
 class ValuesMetadataViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = hydro_models.ValuesMetadata.objects.all()
