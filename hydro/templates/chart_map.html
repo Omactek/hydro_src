@@ -160,7 +160,7 @@
                 // check if dropdowns have valid selections
                 if (!stationId || !valueField || !year) return;
 
-                fetch(`/api/stations/${stationId}/data/?field=${valueField}&year=${year}`)
+                fetch(`/api/stations/${stationId}/data/?par=${valueField}&year=${year}`)
                     .then(response => response.json())
                     .then(data => {
                         const dates = data.map(item => item.date);

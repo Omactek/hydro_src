@@ -7,10 +7,11 @@ from hydro import models as hydro_models
 from django.apps import apps
 from django.shortcuts import render
 from rest_framework.decorators import api_view
-from django.db.models import F
+from django.db.models import F, Func, Value, FloatField
 from datetime import date
 from django.db.models import Count
 import numpy as np
+from django.db import connection
 
 class ValuesMetadataViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = hydro_models.ValuesMetadata.objects.all()
@@ -50,19 +51,76 @@ class StationMetadataViewSet(viewsets.ReadOnlyModelViewSet):
 
 @api_view(['GET'])
 def chart_data(request, station_id):
-    field = request.GET.get('field')
+    field = request.GET.get('par')
     year = int(request.GET.get('year'))
 
     model = StationMetadataViewSet.get_model_from_table(station_id)
 
-    start_date = date(year - 1, 11, 1)
-    end_date = date(year, 10, 30)
+    start_date = date(year, 1, 1)
+    end_date = date(year, 12, 31)
 
     data = model.objects.filter(date_time__gte=start_date, date_time__lte=end_date).annotate(
         date=F('date_time'),
         value=F(field)
     ).values('date', 'value').order_by('date')
     return Response(data)
+
+@api_view(['GET'])
+def all_years_data_query(request, station_id, field):
+    # Construct SQL for calculating quartiles using percentile_cont in PostgreSQL
+    sql = f'''
+        WITH
+            -- Query to fetch data for a specific year and parameter
+            year_data AS (
+                SELECT
+                    EXTRACT(YEAR FROM date_time) AS YEAR,
+                    date_time,
+                    "{field}"
+                FROM
+                    {station_id}
+                WHERE
+                    EXTRACT(YEAR FROM date_time) = 2022  -- Replace with your desired year
+            ),
+            all_years_data AS (
+                SELECT
+                    EXTRACT(YEAR FROM date_time) AS year,
+                    percentile_cont(0.25) WITHIN GROUP (ORDER BY "{field}") AS q1,
+                    percentile_cont(0.5) WITHIN GROUP (ORDER BY "{field}") AS median,
+                    percentile_cont(0.75) WITHIN GROUP (ORDER BY "{field}") AS q3
+                FROM
+                    {station_id}
+                GROUP BY
+                    year
+            )
+        -- Final query to combine the results
+        SELECT
+            yd.date_time,
+            yd."{field}",
+            ayd.q1,
+            ayd.median,
+            ayd.q3
+        FROM
+            year_data yd
+            CROSS JOIN all_years_data ayd
+        WHERE
+            EXTRACT(YEAR FROM yd.date_time) = ayd.year
+        ORDER BY
+            yd.date_time;
+    '''
+
+    # Execute raw SQL query and fetch results
+    with connection.cursor() as cursor:
+        cursor.execute(sql)
+        rows = cursor.fetchall()
+
+    # Prepare response data
+    all_years_data = [
+        {'date_time': row[0], field: row[1], 'q1': row[2], 'median': row[3], 'q3': row[4]}
+        for row in rows
+    ]
+
+    return Response(all_years_data)
+
 
 """def chart_data_view(request):
     return render(request, 'test.html')

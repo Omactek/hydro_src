@@ -2,7 +2,7 @@
 from django.urls import path, include
 from .views import MyFormView
 from rest_framework.routers import DefaultRouter
-from .views_02 import StationMetadataViewSet, chart_data, ValuesMetadataViewSet, chart_map #legacy: , hart_data_view, , map_view
+from .views_02 import StationMetadataViewSet, chart_data, ValuesMetadataViewSet, chart_map, all_years_data_query #legacy: , hart_data_view, , map_view
 
 router = DefaultRouter()
 router.register(r'stations', StationMetadataViewSet)
@@ -15,4 +15,5 @@ urlpatterns = [
     path('api/stations/<str:station_id>/data/', chart_data, name='chart-data'),
     #path('map/', map_view, name='map'), legacy
     path('both/', chart_map, name='both'),
+    path('api/stations/<str:station_id>/<str:field>/all_years/', all_years_data_query, name='all_years_data')
 ]
