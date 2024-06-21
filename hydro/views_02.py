@@ -11,7 +11,12 @@ from django.db.models import F, Func, Value, FloatField
 from datetime import date
 from django.db.models import Count
 import numpy as np
-from django.db import connection
+from django.db.models import Avg, Max, Min, StdDev, Value
+from django.db.models.functions import TruncMonth
+from django.db.models.functions import ExtractMonth
+from django.db.models import Count
+from statistics import median
+
 
 class ValuesMetadataViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = hydro_models.ValuesMetadata.objects.all()
@@ -67,66 +72,16 @@ def chart_data(request, station_id):
 
 @api_view(['GET'])
 def all_years_data_query(request, station_id, field):
-    # Construct SQL for calculating quartiles using percentile_cont in PostgreSQL
-    sql = f'''
-        WITH
-            -- Query to fetch data for a specific year and parameter
-            year_data AS (
-                SELECT
-                    EXTRACT(YEAR FROM date_time) AS YEAR,
-                    date_time,
-                    "{field}"
-                FROM
-                    {station_id}
-                WHERE
-                    EXTRACT(YEAR FROM date_time) = 2022  -- Replace with your desired year
-            ),
-            all_years_data AS (
-                SELECT
-                    EXTRACT(YEAR FROM date_time) AS year,
-                    percentile_cont(0.25) WITHIN GROUP (ORDER BY "{field}") AS q1,
-                    percentile_cont(0.5) WITHIN GROUP (ORDER BY "{field}") AS median,
-                    percentile_cont(0.75) WITHIN GROUP (ORDER BY "{field}") AS q3
-                FROM
-                    {station_id}
-                GROUP BY
-                    year
-            )
-        -- Final query to combine the results
-        SELECT
-            yd.date_time,
-            yd."{field}",
-            ayd.q1,
-            ayd.median,
-            ayd.q3
-        FROM
-            year_data yd
-            CROSS JOIN all_years_data ayd
-        WHERE
-            EXTRACT(YEAR FROM yd.date_time) = ayd.year
-        ORDER BY
-            yd.date_time;
-    '''
+    # Fetch model dynamically
+    model = StationMetadataViewSet.get_model_from_table(station_id)
+    median_values = []
+    for month_counter in range(1,12):
+        data_by_month = model.objects.filter(date_time__month=month_counter).exclude(**{f'{field}__isnull': True}).values_list(field, flat=True)
+        values_for_median = data_by_month.values_list(field, flat=True)
+        median_values.append(median(values_for_median))
+    
+    # Return response
+    return Response(median_values)
 
-    # Execute raw SQL query and fetch results
-    with connection.cursor() as cursor:
-        cursor.execute(sql)
-        rows = cursor.fetchall()
-
-    # Prepare response data
-    all_years_data = [
-        {'date_time': row[0], field: row[1], 'q1': row[2], 'median': row[3], 'q3': row[4]}
-        for row in rows
-    ]
-
-    return Response(all_years_data)
-
-
-"""def chart_data_view(request):
-    return render(request, 'test.html')
-
-def map_view(request):
-    return render(request, 'map.html')
-""" #legacy
 def chart_map(request):
     return render(request, 'chart_map.html')

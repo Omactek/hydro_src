@@ -15,5 +15,5 @@ urlpatterns = [
     path('api/stations/<str:station_id>/data/', chart_data, name='chart-data'),
     #path('map/', map_view, name='map'), legacy
     path('both/', chart_map, name='both'),
-    path('api/stations/<str:station_id>/<str:field>/all_years/', all_years_data_query, name='all_years_data')
+    path('api/stations/<str:station_id>/<str:field>/all_years/', all_years_data_query, name='all_years_data'),
 ]
