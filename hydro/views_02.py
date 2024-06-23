@@ -9,13 +9,8 @@ from django.shortcuts import render
 from rest_framework.decorators import api_view
 from django.db.models import F, Func, Value, FloatField
 from datetime import date
-from django.db.models import Count
-import numpy as np
-from django.db.models import Avg, Max, Min, StdDev, Value
-from django.db.models.functions import TruncMonth
-from django.db.models.functions import ExtractMonth
-from django.db.models import Count
-from statistics import median
+from .aggregates import Percentile
+from rest_framework.exceptions import ValidationError
 
 
 class ValuesMetadataViewSet(viewsets.ReadOnlyModelViewSet):
@@ -72,16 +67,23 @@ def chart_data(request, station_id):
 
 @api_view(['GET'])
 def all_years_data_query(request, station_id, field):
-    # Fetch model dynamically
     model = StationMetadataViewSet.get_model_from_table(station_id)
-    median_values = []
-    for month_counter in range(1,12):
-        data_by_month = model.objects.filter(date_time__month=month_counter).exclude(**{f'{field}__isnull': True}).values_list(field, flat=True)
-        values_for_median = data_by_month.values_list(field, flat=True)
-        median_values.append(median(values_for_median))
-    
-    # Return response
-    return Response(median_values)
+    if field not in [f.name for f in model._meta.fields]: #mitigating sql injection risks
+        raise ValidationError('error: Invalid field')
+
+    queryset = (model.objects
+                .annotate(month=Func(
+                    F('date_time'), function='to_char', template="%(function)s(date_trunc('month', %(expressions)s), 'MM')"))
+                .values('month')
+                .annotate(
+                    q20=Percentile(0.20, field),
+                    q40=Percentile(0.40, field),
+                    q50=Percentile(0.50, field),  #median
+                    q60=Percentile(0.60, field),
+                    q80=Percentile(0.80, field))
+                .order_by('month'))
+
+    return Response(queryset)
 
 def chart_map(request):
     return render(request, 'chart_map.html')
