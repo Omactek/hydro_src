@@ -76,11 +76,15 @@ def all_years_data_query(request, station_id, field):
                     F('date_time'), function='to_char', template="%(function)s(date_trunc('month', %(expressions)s), 'MM')"))
                 .values('month')
                 .annotate(
+                    q10=Percentile(0.10, field),
                     q20=Percentile(0.20, field),
+                    q30=Percentile(0.30, field),
                     q40=Percentile(0.40, field),
-                    q50=Percentile(0.50, field),  #median
+                    q50=Percentile(0.50, field),  # median
                     q60=Percentile(0.60, field),
-                    q80=Percentile(0.80, field))
+                    q70=Percentile(0.70, field),
+                    q80=Percentile(0.80, field),
+                    q90=Percentile(0.90, field))
                 .order_by('month'))
 
     return Response(queryset)
