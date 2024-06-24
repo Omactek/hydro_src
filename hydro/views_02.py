@@ -13,14 +13,6 @@ from datetime import datetime
 from .aggregates import Percentile
 from rest_framework.exceptions import ValidationError
 
-def parse_iso8601(date_str): #parse into python date object
-    try:
-        if date_str.endswith('Z'):
-            date_str = date_str[:-1] + '+00:00'
-        return datetime.fromisoformat(date_str)
-    except ValueError:
-        return None
-
 class ValuesMetadataViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = hydro_models.ValuesMetadata.objects.all()
     serializer_class = ValuesMetadataSerializer
@@ -97,13 +89,11 @@ def get_percentiles(request, station_id, field):
 @api_view(['GET'])
 def dataseries(request, station_id, field):
     model = StationMetadataViewSet.get_model_from_table(station_id)
-    start_date_str = request.GET.get('start')
-    end_date_str = request.GET.get('end')
+    start_date = request.GET.get('start')
+    end_date = request.GET.get('end')
     
-    if start_date_str and end_date_str:
-        print(start_date_str)
-        start_date = parse_iso8601(start_date_str)
-        end_date = parse_iso8601(end_date_str)
+    if start_date and end_date:
+        print(start_date)
         queryset = model.objects.filter(date_time__gte=start_date, date_time__lte=end_date).annotate(
             date=F('date_time'),
             value=F(field)

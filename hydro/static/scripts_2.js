@@ -12,7 +12,8 @@ document.addEventListener("DOMContentLoaded", function() {
         dateFormat: 'd-m-Y',
         minDate: '',
         maxDate: '',
-        disable: []
+        disable: [],
+        defaultDate: []
     }); 
 
     let stationsData = {};
@@ -46,11 +47,22 @@ document.addEventListener("DOMContentLoaded", function() {
         })
         .catch(error => console.error('Error fetching GeoJSON data:', error));
 
-    function updateDatePicker(dateWidget, startDate, endDate, disableDates) {
+    function updateDatePicker(dateWidget, startDate, endDate, disableDates, defaultDates) {
         dateWidget.set('minDate', startDate);
         dateWidget.set('maxDate', endDate);
         dateWidget.set('disable', disableDates);
+        dateWidget.set('defaultDate', defaultDates);
         alert(`updating pickr: ${startDate} and end: ${endDate}`)
+    }
+
+    function formatDateForBackend(date) {
+        // Ensure date is a Date object
+        const formattedDate = new Date(date);
+        // Format as YYYY-MM-DD
+        const year = formattedDate.getFullYear();
+        const month = String(formattedDate.getMonth() + 1).padStart(2, '0'); // Month is zero-based
+        const day = String(formattedDate.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
     }
 
     function zoomToStation(stationId) {
@@ -108,8 +120,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     yearDropdown.appendChild(option);
                 });
                 if (yearDropdown.options.length > 0) yearDropdown.selectedIndex = 0;
-                fetchDataAndRenderChart();  // update the chart after updating the dropdown
-                fetchDataAndRenderSeriesChart();
+                fetchDataAndRenderBothCharts();
             })
             .catch(error => console.error('Error fetching years:', error));
     }
@@ -249,13 +260,17 @@ document.addEventListener("DOMContentLoaded", function() {
     function fetchDataAndRenderSeriesChart() {
         const stationId = stationDropdown.value;
         const valueField = valueDropdown.value;
-        const startDate = datePicker.selectedDates[0].toISOString();
-        const endDate = datePicker.selectedDates[1].toISOString();
+        const startDate = datePicker.selectedDates[0];
+        const endDate = datePicker.selectedDates[1];
         const parLabel = valueDropdown.options[valueDropdown.selectedIndex].textContent;
         const parUnit = valueDropdown.options[valueDropdown.selectedIndex].getAttribute('unit');
 
+        const formattedStartDate = formatDateForBackend(startDate);
+        const formattedEndDate = formatDateForBackend(endDate);
+        const dateRange = [startDate, endDate];
+
         if (!stationId || !valueField) return;
-        fetch(`api/${stationId}/${valueField}/dataseries/?start=${startDate}&end=${endDate}`)
+        fetch(`api/${stationId}/${valueField}/dataseries/?start=${formattedStartDate}&end=${formattedEndDate}`)
             .then(response => response.json())
             .then(responseData => {
                 console.log(responseData);
@@ -286,7 +301,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     }
                 };
                 Plotly.newPlot(chart2Div, [hourlyTrace], layout);
-                updateDatePicker(datePicker, minDate, maxDate, disable);
+                updateDatePicker(datePicker, minDate, maxDate, disable, dateRange);
             }
         ).catch(error => console.error('Error fetching chart data:', error)); 
     }
