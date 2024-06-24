@@ -2,16 +2,20 @@ document.addEventListener("DOMContentLoaded", function() {
     const stationDropdown = document.getElementById("stationDropdown");
     const valueDropdown = document.getElementById("valueDropdown");
     const yearDropdown = document.getElementById("yearDropdown");
-    const form = document.getElementById("stationForm");
+    const dateInput = document.getElementById("dateInput");
     const chartDiv = document.getElementById("chartDiv");
     const lineButton = document.getElementById("lineButton");
     const histogramButton = document.getElementById("histogramButton");
     const boxPlotButton = document.getElementById("boxPlotButton");
 
-    let currentChartType = 'line';
     let stationsData = {};
 
     var map = L.map('map').setView([49.8175, 15.4730], 7); // centered on the Czech Republic
+    flatpickr('#dateRangePicker', {
+        mode: "range",
+        dateFormat: "Y-m-d",
+        defaultDate: ["2016-10-10", "2016-10-20"]
+    });
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
