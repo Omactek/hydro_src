@@ -11,11 +11,12 @@ document.addEventListener("DOMContentLoaded", function() {
     let stationsData = {};
 
     var map = L.map('map').setView([49.8175, 15.4730], 7); // centered on the Czech Republic
-    flatpickr('#dateRangePicker', {
-        mode: "range",
+    flatpickr('#datePicker', {
+        mode: 'range',
         dateFormat: "Y-m-d",
-        defaultDate: ["2016-10-10", "2016-10-20"]
-    });
+        minDate: '2024-05-15',
+        maxDate: '2024-07-26'
+    }); 
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,

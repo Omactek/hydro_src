@@ -48,9 +48,10 @@
             <select id="valueDropdown"></select>
             <select id="yearDropdown"></select>
         </form>
-        <div class="flatpickrContainer">
-            <h2>Select Date Range</h2>
-            <div id="dateRangePicker"></div>
+        <div class="group">
+            <input type="text" id="datePicker">
+            <span class="bar"></span>
+            <label class="input-label">From tomorrow</label>
         </div>
         <div>
             <button id="lineButton">Line Graph</button>
@@ -63,9 +64,9 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-    {% load static %}
-    <script src="{% static 'scripts_2 copy.js' %}"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    {% load static %}
+    <script src="{% static 'scripts_2 copy.js' %}"></script>
 </body>
 </html>
