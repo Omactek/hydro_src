@@ -50,12 +50,9 @@ class StationMetadataViewSet(viewsets.ReadOnlyModelViewSet):
         raise ValueError('No model found with db_table {}!'.format(table_name))
 
 @api_view(['GET'])
-def chart_data(request, station_id):
-    field = request.GET.get('par')
-    year = int(request.GET.get('year'))
-
+def chart_data(request, station_id, field, year):
     model = StationMetadataViewSet.get_model_from_table(station_id)
-
+    year = int(year)
     start_date = date(year, 1, 1)
     end_date = date(year, 12, 31)
 
@@ -66,7 +63,7 @@ def chart_data(request, station_id):
     return Response(data)
 
 @api_view(['GET'])
-def all_years_data_query(request, station_id, field):
+def get_percentiles(request, station_id, field):
     model = StationMetadataViewSet.get_model_from_table(station_id)
     if field not in [f.name for f in model._meta.fields]: #mitigating sql injection risks
         raise ValidationError('error: Invalid field')

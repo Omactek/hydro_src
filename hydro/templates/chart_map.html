@@ -160,43 +160,69 @@
                 // check if dropdowns have valid selections
                 if (!stationId || !valueField || !year) return;
 
-                fetch(`/api/stations/${stationId}/data/?par=${valueField}&year=${year}`)
+                fetch(`/api/${stationId}/${valueField}/${year}/data`)
                     .then(response => response.json())
                     .then(data => {
-                        const dates = data.map(item => item.date);
-                        const values = data.map(item => item.value);
+                        const hourlyDates = data.map(item => item.date);
+                        const hourlyValues = data.map(item => item.value);
 
-                        let trace;
+                        const currentChartType = 'line';
                         if (currentChartType === 'line') {
-                            trace = {
-                                x: dates,
-                                y: values,
-                                mode: 'lines',
-                                type: 'scatter'
-                            };
-                        } else if (currentChartType === 'histogram') {
-                            trace = {
-                                x: values,
-                                type: 'histogram'
-                            };
-                        } else if (currentChartType === 'box') {
-                            trace = {
-                                y: values,
-                                type: 'box'
-                            };
+                            fetch(`/api/${stationId}/${valueField}/percentiles`)
+                                .then(response => response.json())
+                                .then(percentiles => {
+                                    var currentYear = new Date(hourlyDates[0]).getFullYear();
+                                    const months = percentiles.map(item => item.month);
+                                    var firstDayOfMonths = percentiles.map(d => `${currentYear}-${d.month}-01T00:00:00`);
+                                    var q10 = percentiles.map(d => d.q10);
+                                    var q20 = percentiles.map(d => d.q20);
+                                    var q30 = percentiles.map(d => d.q30);
+                                    var q40 = percentiles.map(d => d.q40);
+                                    var q50 = percentiles.map(d => d.q50);
+                                    var q60 = percentiles.map(d => d.q60);
+                                    var q70 = percentiles.map(d => d.q70);
+                                    var q80 = percentiles.map(d => d.q80);
+                                    var q90 = percentiles.map(d => d.q90);
+
+                                    // Update the trace for the line chart
+                                    var hourlyTrace = {
+                                        x: hourlyDates,
+                                        y: hourlyValues,
+                                        mode: 'lines',
+                                        name: 'Hourly Values'
+                                    };
+
+                                    var percentileTraces = [
+                                        { x: firstDayOfMonths, y: q10, mode: 'lines+markers', name: '10th Percentile' },
+                                        { x: firstDayOfMonths, y: q20, mode: 'lines+markers', name: '20th Percentile' },
+                                        { x: firstDayOfMonths, y: q30, mode: 'lines+markers', name: '30th Percentile' },
+                                        { x: firstDayOfMonths, y: q40, mode: 'lines+markers', name: '40th Percentile' },
+                                        { x: firstDayOfMonths, y: q50, mode: 'lines+markers', name: '50th Percentile' },
+                                        { x: firstDayOfMonths, y: q60, mode: 'lines+markers', name: '60th Percentile' },
+                                        { x: firstDayOfMonths, y: q70, mode: 'lines+markers', name: '70th Percentile' },
+                                        { x: firstDayOfMonths, y: q80, mode: 'lines+markers', name: '80th Percentile' },
+                                        { x: firstDayOfMonths, y: q90, mode: 'lines+markers', name: '90th Percentile' }
+                                    ];
+
+                                    var allTraces = [hourlyTrace].concat(percentileTraces);
+
+                                    var layout = {
+                                        title: 'Hourly Data and Monthly Percentiles',
+                                        xaxis: {
+                                            title: 'Date',
+                                            type: 'date',
+                                            range: [`${currentYear}-01-01`, `${currentYear}-12-31`],
+                                            tickformat: '%Y-%m-%d'
+                                        },
+                                        yaxis: {
+                                            title: 'Value'
+                                        }
+                                    };
+
+                                    // Plot the chart
+                                    Plotly.newPlot(chartDiv, allTraces, layout);
+                                })
                         }
-
-                        const layout = {
-                            title: `${valueField} in ${year}`,
-                            xaxis: {
-                                title: currentChartType === 'line' ? 'Date' : 'Value'
-                            },
-                            yaxis: {
-                                title: 'Value'
-                            }
-                        };
-
-                        Plotly.newPlot(chartDiv, [trace], layout);
                     })
                     .catch(error => console.error('Error fetching chart data:', error));
             }
