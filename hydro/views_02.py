@@ -86,5 +86,20 @@ def get_percentiles(request, station_id, field):
 
     return Response(queryset)
 
+@api_view(['GET'])
+def dataseries(request, station_id, field):
+    model = StationMetadataViewSet.get_model_from_table(station_id)
+    start_date = request.GET.get('start')
+    end_date = request.GET.get('end')
+    queryset = model.objects.filter(date_time__gte=start_date, date_time__lte=end_date).annotate(
+        date=F('date_time'),
+        value=F(field)
+    ).values('date', 'value').order_by('date')
+
+    return Response(queryset)
+
 def chart_map(request):
     return render(request, 'chart_map.html')
+
+def test(request):
+    return render(request, 'test.html')

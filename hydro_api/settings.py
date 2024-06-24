@@ -134,7 +134,7 @@ USE_TZ = False #might need revision
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
-
+STATIC_ROOT = "hydro/static"
 LEAFLET_CONFIG = {
     'DEFAULT_CENTER': (-1.94, 29.87),
     'DEFAULT_ZOOM': 8,
