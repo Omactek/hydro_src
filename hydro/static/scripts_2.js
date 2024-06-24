@@ -2,21 +2,22 @@ document.addEventListener("DOMContentLoaded", function() {
     const stationDropdown = document.getElementById("stationDropdown");
     const valueDropdown = document.getElementById("valueDropdown");
     const yearDropdown = document.getElementById("yearDropdown");
-    const dateInput = document.getElementById("dateInput");
     const chartDiv = document.getElementById("chartDiv");
+    const chart2Div = document.getElementById("chart2Div");
     const lineButton = document.getElementById("lineButton");
     const histogramButton = document.getElementById("histogramButton");
     const boxPlotButton = document.getElementById("boxPlotButton");
+    const datePicker = flatpickr('#datePicker', {
+        mode: 'range',
+        dateFormat: 'd-m-Y',
+        minDate: '',
+        maxDate: '',
+        disable: []
+    }); 
 
     let stationsData = {};
 
     var map = L.map('map').setView([49.8175, 15.4730], 7); // centered on the Czech Republic
-    flatpickr('#datePicker', {
-        mode: 'range',
-        dateFormat: "Y-m-d",
-        minDate: '2024-05-15',
-        maxDate: '2024-07-26'
-    }); 
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
@@ -44,6 +45,13 @@ document.addEventListener("DOMContentLoaded", function() {
             });
         })
         .catch(error => console.error('Error fetching GeoJSON data:', error));
+
+    function updateDatePicker(dateWidget, startDate, endDate, disableDates) {
+        dateWidget.set('minDate', startDate);
+        dateWidget.set('maxDate', endDate);
+        dateWidget.set('disable', disableDates);
+        alert(`updating pickr: ${startDate} and end: ${endDate}`)
+    }
 
     function zoomToStation(stationId) {
         const coordinates = stationsData[stationId];
@@ -241,132 +249,46 @@ document.addEventListener("DOMContentLoaded", function() {
     function fetchDataAndRenderSeriesChart() {
         const stationId = stationDropdown.value;
         const valueField = valueDropdown.value;
-        const year = yearDropdown.value;
+        const startDate = datePicker.selectedDates[0].toISOString();
+        const endDate = datePicker.selectedDates[1].toISOString();
         const parLabel = valueDropdown.options[valueDropdown.selectedIndex].textContent;
         const parUnit = valueDropdown.options[valueDropdown.selectedIndex].getAttribute('unit');
 
-        if (!stationId || !valueField || !year) return;
-
-        fetch(`/api/${stationId}/${valueField}/${year}/data`)
+        if (!stationId || !valueField) return;
+        fetch(`api/${stationId}/${valueField}/dataseries/?start=${startDate}&end=${endDate}`)
             .then(response => response.json())
-            .then(data => {
+            .then(responseData => {
+                console.log(responseData);
+                const minDate = responseData.min_date;
+                const maxDate = responseData.max_date;
+                const disable = responseData.disable_dates;
+                const data = responseData.data;
                 const hourlyDates = data.map(item => item.date);
                 const hourlyValues = data.map(item => item.value);
 
-                fetch(`/api/${stationId}/${valueField}/percentiles`)
-                    .then(response => response.json())
-                    .then(percentiles => {
-                        var currentYear = new Date(hourlyDates[0]).getFullYear();
-                        const months = percentiles.map(item => item.month);
-                        var firstDayOfMonths = percentiles.map(d => `${currentYear}-${d.month}-01T00:00:00`);
-                        var q10 = percentiles.map(d => d.q10);
-                        var q20 = percentiles.map(d => d.q20);
-                        var q30 = percentiles.map(d => d.q30);
-                        var q40 = percentiles.map(d => d.q40);
-                        var q50 = percentiles.map(d => d.q50);
-                        var q60 = percentiles.map(d => d.q60);
-                        var q70 = percentiles.map(d => d.q70);
-                        var q80 = percentiles.map(d => d.q80);
-                        var q90 = percentiles.map(d => d.q90);
-                        var conTrace = {
-                            x: firstDayOfMonths,
-                            y:q50,
-                            fill: 'None',
-                            mode: 'lines',
-                            line: {color: 'transparent'},
-                            showlegend: false,
-                            name: 'controll line',
-                            hoverinfo: 'none'
-                        }
-                        var conTrace2 = {
-                            x: firstDayOfMonths,
-                            y:q30,
-                            fill: 'None',
-                            mode: 'lines',
-                            line: {color: 'transparent'},
-                            showlegend: false,
-                            name: 'controll line',
-                            hoverinfo: 'none'
-                        }
-                        var q10 = {
-                            x: firstDayOfMonths,
-                            y: q10,
-                            line: {color: 'transparent'},
-                            mode: "lines",
-                            fill: 'tonexty',
-                            fillcolor: 'rgba(0,100,80,0.2)', 
-                            name: 'Q10',
-                            type: 'scatter',
-                            hoverinfo: 'y'
-                        }
-                        var q30 = {
-                            x: firstDayOfMonths,
-                            y: q30,
-                            line: {color: 'transparent'},
-                            mode: "lines",
-                            fill: 'tonexty',
-                            fillcolor: 'rgba(0,176,246,0.2)', 
-                            name: 'Q30',
-                            type: 'scatter',
-                            hoverinfo: 'y'
-                        }
-                        var q70 = {
-                            x: firstDayOfMonths,
-                            y: q70,
-                            line: {color: 'transparent'},
-                            mode: "lines",
-                            fill: 'tonexty',
-                            fillcolor: 'rgba(0,176,246,0.2)', 
-                            name: 'Q70',
-                            type: 'scatter',
-                            hoverinfo: 'y'
-                        }
-                        var q90 = {
-                            x: firstDayOfMonths,
-                            y: q90,
-                            fill: 'tonexty',
-                            fillcolor: 'rgba(0,100,80,0.2)', 
-                            line: {color: 'transparent'},
-                            mode: "lines",
-                            name: 'Q90',
-                            type: 'scatter',
-                            hoverinfo: 'y'
-                        }
-                        var hourlyTrace = {
-                            x: hourlyDates,
-                            y: hourlyValues,
-                            mode: 'lines',
-                            name: 'Hourly Values',
-                            line: {color: 'blue'},
-                            type: 'scatter'
-                        };
+                var hourlyTrace = {
+                    x: hourlyDates,
+                    y: hourlyValues,
+                    mode: 'lines',
+                    name: 'Hourly Values',
+                    line: {color: 'blue'},
+                    type: 'scatter'
+                };
 
-                        var median = {
-                            x: firstDayOfMonths,
-                            y: q50,
-                            mode: 'lines',
-                            name: 'Median',
-                            line: {color: 'red'},
-                            hoverinfo: 'y'
-                        };
-
-                        var allTraces = [conTrace2, q10, conTrace, q30, median, q70, q90, hourlyTrace];
-                        var layout = {
-                            title: `Hourly data and monthly percentiles (all measured years)`,
-                            xaxis: {
-                                title: `date (${year})`,
-                                type: 'date',
-                                range: [`${currentYear}-01-01`, `${currentYear}-12-31`],
-                            },
-                            yaxis: {
-                                title: `${parLabel} [${parUnit}]`
-                            }
-                        };
-                        Plotly.newPlot(chart2Div, allTraces, layout);
-                })
+                var layout = {
+                    title: `Whole time series`,
+                    xaxis: {
+                        title: `date`,
+                        type: 'date',
+                    },
+                    yaxis: {
+                        title: `${parLabel} [${parUnit}]`
+                    }
+                };
+                Plotly.newPlot(chart2Div, [hourlyTrace], layout);
+                updateDatePicker(datePicker, minDate, maxDate, disable);
             }
-        )
-        .catch(error => console.error('Error fetching chart data:', error));
+        ).catch(error => console.error('Error fetching chart data:', error)); 
     }
 
     stationDropdown.addEventListener("change", function() {

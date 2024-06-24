@@ -7,11 +7,19 @@ from hydro import models as hydro_models
 from django.apps import apps
 from django.shortcuts import render
 from rest_framework.decorators import api_view
-from django.db.models import F, Func, Value, FloatField
+from django.db.models import F, Func, Max, Min
 from datetime import date
+from datetime import datetime
 from .aggregates import Percentile
 from rest_framework.exceptions import ValidationError
 
+def parse_iso8601(date_str): #parse into python date object
+    try:
+        if date_str.endswith('Z'):
+            date_str = date_str[:-1] + '+00:00'
+        return datetime.fromisoformat(date_str)
+    except ValueError:
+        return None
 
 class ValuesMetadataViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = hydro_models.ValuesMetadata.objects.all()
@@ -89,14 +97,36 @@ def get_percentiles(request, station_id, field):
 @api_view(['GET'])
 def dataseries(request, station_id, field):
     model = StationMetadataViewSet.get_model_from_table(station_id)
-    start_date = request.GET.get('start')
-    end_date = request.GET.get('end')
-    queryset = model.objects.filter(date_time__gte=start_date, date_time__lte=end_date).annotate(
-        date=F('date_time'),
-        value=F(field)
-    ).values('date', 'value').order_by('date')
+    start_date_str = request.GET.get('start')
+    end_date_str = request.GET.get('end')
+    
+    if start_date_str and end_date_str:
+        print(start_date_str)
+        start_date = parse_iso8601(start_date_str)
+        end_date = parse_iso8601(end_date_str)
+        queryset = model.objects.filter(date_time__gte=start_date, date_time__lte=end_date).annotate(
+            date=F('date_time'),
+            value=F(field)
+        ).values('date', 'value').order_by('date')
+    else: #will probably crash if opened through browser
+        queryset = model.objects.annotate(
+            date=F('date_time'),
+            value=F(field)
+        ).values('date', 'value').order_by('date')
 
-    return Response(queryset)
+    objects_with_field = model.objects.filter(**{f'{field}__isnull': False})
+    objects_without_field = model.objects.filter(**{f'{field}__isnull': True}).values_list('date_time', flat=True)
+    min_date = objects_with_field.aggregate(min_date=Min('date_time'))['min_date'].strftime('%d-%m-%Y')
+    max_date = objects_with_field.aggregate(max_date=Max('date_time'))['max_date'].strftime('%d-%m-%Y')
+    dates_without_field = [date.strftime('%d-%m-%Y') for date in objects_without_field]
+
+    response_data = {
+        "min_date": min_date,
+        "max_date": max_date,
+        "disable_dates": dates_without_field,
+        "data": list(queryset)
+    }
+    return Response(response_data)
 
 def chart_map(request):
     return render(request, 'chart_map.html')
