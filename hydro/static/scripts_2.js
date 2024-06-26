@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", function() {
         minDate: '',
         maxDate: '',
         disable: [],
-        defaultDate: []
+        defaultDate: [],
     }); 
 
     let stationsData = {};
@@ -145,8 +145,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     .then(response => response.json())
                     .then(percentiles => {
                         var currentYear = new Date(hourlyDates[0]).getFullYear();
-                        const months = percentiles.map(item => item.month);
-                        var firstDayOfMonths = percentiles.map(d => `${currentYear}-${d.month}-01T00:00:00`);
+                        var percDate = percentiles.map(d => `${currentYear}-${d.string_date_without_year}`);
                         var q10 = percentiles.map(d => d.q10);
                         var q20 = percentiles.map(d => d.q20);
                         var q30 = percentiles.map(d => d.q30);
@@ -157,7 +156,7 @@ document.addEventListener("DOMContentLoaded", function() {
                         var q80 = percentiles.map(d => d.q80);
                         var q90 = percentiles.map(d => d.q90);
                         var conTrace = {
-                            x: firstDayOfMonths,
+                            x: percDate,
                             y:q50,
                             fill: 'None',
                             mode: 'lines',
@@ -167,7 +166,7 @@ document.addEventListener("DOMContentLoaded", function() {
                             hoverinfo: 'none'
                         }
                         var conTrace2 = {
-                            x: firstDayOfMonths,
+                            x: percDate,
                             y:q30,
                             fill: 'None',
                             mode: 'lines',
@@ -177,7 +176,7 @@ document.addEventListener("DOMContentLoaded", function() {
                             hoverinfo: 'none'
                         }
                         var q10 = {
-                            x: firstDayOfMonths,
+                            x: percDate,
                             y: q10,
                             line: {color: 'transparent'},
                             mode: "lines",
@@ -188,7 +187,7 @@ document.addEventListener("DOMContentLoaded", function() {
                             hoverinfo: 'y'
                         }
                         var q30 = {
-                            x: firstDayOfMonths,
+                            x: percDate,
                             y: q30,
                             line: {color: 'transparent'},
                             mode: "lines",
@@ -199,7 +198,7 @@ document.addEventListener("DOMContentLoaded", function() {
                             hoverinfo: 'y'
                         }
                         var q70 = {
-                            x: firstDayOfMonths,
+                            x: percDate,
                             y: q70,
                             line: {color: 'transparent'},
                             mode: "lines",
@@ -210,7 +209,7 @@ document.addEventListener("DOMContentLoaded", function() {
                             hoverinfo: 'y'
                         }
                         var q90 = {
-                            x: firstDayOfMonths,
+                            x: percDate,
                             y: q90,
                             fill: 'tonexty',
                             fillcolor: 'rgba(0,100,80,0.2)', 
@@ -230,7 +229,7 @@ document.addEventListener("DOMContentLoaded", function() {
                         };
 
                         var median = {
-                            x: firstDayOfMonths,
+                            x: percDate,
                             y: q50,
                             mode: 'lines',
                             name: 'Median',

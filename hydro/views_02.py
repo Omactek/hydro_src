@@ -62,29 +62,62 @@ def chart_data(request, station_id, field, year):
     ).values('date', 'value').order_by('date')
     return Response(data)
 
+class ToChar(Func):
+    function = 'to_char'
+    template = "%(function)s(%(expressions)s, 'MM-DD\"T\"HH24:MI:SS')"
+
 @api_view(['GET'])
 def get_percentiles(request, station_id, field):
     model = StationMetadataViewSet.get_model_from_table(station_id)
-    if field not in [f.name for f in model._meta.fields]: #mitigating sql injection risks
+    if field not in [f.name for f in model._meta.fields]:  # mitigating SQL injection risks
         raise ValidationError('error: Invalid field')
 
+    # Annotate month and calculate percentiles
     queryset = (model.objects
-                .annotate(month=Func(
-                    F('date_time'), function='to_char', template="%(function)s(date_trunc('month', %(expressions)s), 'MM')"))
-                .values('month')
+                .annotate(string_date_without_year=Func(
+                    F('date_time'), function='to_char', template="%(function)s(date_trunc('month', %(expressions)s), 'MM-DD\"T\"HH24:MI:SS')"))
+                .values('string_date_without_year')
                 .annotate(
                     q10=Percentile(0.10, field),
                     q20=Percentile(0.20, field),
                     q30=Percentile(0.30, field),
                     q40=Percentile(0.40, field),
-                    q50=Percentile(0.50, field),  # median
+                    q50=Percentile(0.50, field), #median
                     q60=Percentile(0.60, field),
                     q70=Percentile(0.70, field),
                     q80=Percentile(0.80, field),
                     q90=Percentile(0.90, field))
-                .order_by('month'))
+                .order_by('string_date_without_year'))
 
-    return Response(queryset)
+    results = list(queryset)
+
+    for result in results:
+        month = result['string_date_without_year'][:2]
+        result['string_date_without_year'] = f"{month}-15T00:00:00"
+
+    # Find December and January results
+    dec_result = next((result for result in results if result['string_date_without_year'].startswith('12-')), None)
+    jan_result = next((result for result in results if result['string_date_without_year'].startswith('01-')), None)
+
+    # Add December previous year as '01-01T00:00:00'
+    if dec_result:
+        dec_result_prev_year = dec_result.copy()
+        dec_result_prev_year['string_date_without_year'] = '01-01T00:00:00'
+        results.insert(0, dec_result_prev_year)
+
+    # Add January next year as '12-31T00:00:00'
+    if jan_result:
+        jan_result_next_year = jan_result.copy()
+        jan_result_next_year['string_date_without_year'] = '12-31T00:00:00'
+        results.append(jan_result_next_year)
+
+    # Sort results
+    results = sorted(results, key=lambda x: {
+        '01-01T00:00:00': 0,
+        '12-31T00:00:00': 14
+    }.get(x['string_date_without_year'], int(x['string_date_without_year'][:2])))
+
+    return Response(results)
 
 @api_view(['GET'])
 def dataseries(request, station_id, field):
