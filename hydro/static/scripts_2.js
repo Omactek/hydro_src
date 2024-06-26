@@ -141,7 +141,11 @@ document.addEventListener("DOMContentLoaded", function() {
                 const hourlyDates = data.map(item => item.date);
                 const hourlyValues = data.map(item => item.value);
 
-                fetch(`/api/${stationId}/${valueField}/percentiles`)
+                fetch(`/api/${stationId}/${valueField}/percentiles`, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest' // Custom header
+                    }
+                })
                     .then(response => response.json())
                     .then(percentiles => {
                         var currentYear = new Date(hourlyDates[0]).getFullYear();
