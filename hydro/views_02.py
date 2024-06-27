@@ -12,6 +12,7 @@ from datetime import date
 from datetime import datetime
 from .aggregates import Percentile
 from rest_framework.exceptions import ValidationError
+from .utils import prepare_data_for_chart
 
 class ValuesMetadataViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = hydro_models.ValuesMetadata.objects.all()
@@ -62,10 +63,6 @@ def chart_data(request, station_id, field, year):
     ).values('date', 'value').order_by('date')
     return Response(data)
 
-class ToChar(Func):
-    function = 'to_char'
-    template = "%(function)s(%(expressions)s, 'MM-DD\"T\"HH24:MI:SS')"
-
 @api_view(['GET'])
 def get_percentiles(request, station_id, field):
     model = StationMetadataViewSet.get_model_from_table(station_id)
@@ -91,26 +88,8 @@ def get_percentiles(request, station_id, field):
                 .order_by('string_date_without_year'))
 
     results = list(queryset)
-    if is_ajax: #preparing data for chart
-        for result in results:
-            month = result['string_date_without_year'][:2]
-            result['string_date_without_year'] = f"{month}-15T00:00:00"
-
-        #find December and January results
-        dec_result = next((result for result in results if result['string_date_without_year'].startswith('12-')), None)
-        jan_result = next((result for result in results if result['string_date_without_year'].startswith('01-')), None)
-
-        #add December previous year as '01-01T00:00:00'
-        if dec_result:
-            dec_result_prev_year = dec_result.copy()
-            dec_result_prev_year['string_date_without_year'] = '01-01T00:00:00'
-            results.insert(0, dec_result_prev_year)
-
-        #add January next year as '12-31T00:00:00'
-        if jan_result:
-            jan_result_next_year = jan_result.copy()
-            jan_result_next_year['string_date_without_year'] = '12-31T00:00:00'
-            results.append(jan_result_next_year)
+    if is_ajax:  # Preparing data for chart
+        results = prepare_data_for_chart(results)
 
     return Response(results)
 

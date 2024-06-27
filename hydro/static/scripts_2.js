@@ -167,7 +167,8 @@ document.addEventListener("DOMContentLoaded", function() {
                             line: {color: 'transparent'},
                             showlegend: false,
                             name: 'controll line',
-                            hoverinfo: 'none'
+                            hoverinfo: 'none',
+                            connectgaps: true
                         }
                         var conTrace2 = {
                             x: percDate,
@@ -177,7 +178,8 @@ document.addEventListener("DOMContentLoaded", function() {
                             line: {color: 'transparent'},
                             showlegend: false,
                             name: 'controll line',
-                            hoverinfo: 'none'
+                            hoverinfo: 'none',
+                            connectgaps: true
                         }
                         var q10 = {
                             x: percDate,
@@ -188,7 +190,8 @@ document.addEventListener("DOMContentLoaded", function() {
                             fillcolor: 'rgba(0,100,80,0.2)', 
                             name: 'Q10',
                             type: 'scatter',
-                            hoverinfo: 'y'
+                            hoverinfo: 'y',
+                            legendgroup: 'Q10 to Q90'
                         }
                         var q30 = {
                             x: percDate,
@@ -199,7 +202,8 @@ document.addEventListener("DOMContentLoaded", function() {
                             fillcolor: 'rgba(0,176,246,0.2)', 
                             name: 'Q30',
                             type: 'scatter',
-                            hoverinfo: 'y'
+                            hoverinfo: 'y',
+                            legendgroup: 'Q30 to Q70'
                         }
                         var q70 = {
                             x: percDate,
@@ -210,7 +214,8 @@ document.addEventListener("DOMContentLoaded", function() {
                             fillcolor: 'rgba(0,176,246,0.2)', 
                             name: 'Q70',
                             type: 'scatter',
-                            hoverinfo: 'y'
+                            hoverinfo: 'y',
+                            legendgroup: 'Q30 to Q70'
                         }
                         var q90 = {
                             x: percDate,
@@ -221,7 +226,8 @@ document.addEventListener("DOMContentLoaded", function() {
                             mode: "lines",
                             name: 'Q90',
                             type: 'scatter',
-                            hoverinfo: 'y'
+                            hoverinfo: 'y',
+                            legendgroup: 'Q10 to Q90'
                         }
                         var hourlyTrace = {
                             x: hourlyDates,
@@ -238,7 +244,8 @@ document.addEventListener("DOMContentLoaded", function() {
                             mode: 'lines',
                             name: 'Median',
                             line: {color: 'red'},
-                            hoverinfo: 'y'
+                            hoverinfo: 'y',
+                            connectgaps: true
                         };
 
                         var allTraces = [conTrace2, q10, conTrace, q30, median, q70, q90, hourlyTrace];
