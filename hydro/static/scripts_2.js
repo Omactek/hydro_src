@@ -56,11 +56,9 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     function formatDateForBackend(date) {
-        // Ensure date is a Date object
         const formattedDate = new Date(date);
-        // Format as YYYY-MM-DD
         const year = formattedDate.getFullYear();
-        const month = String(formattedDate.getMonth() + 1).padStart(2, '0'); // Month is zero-based
+        const month = String(formattedDate.getMonth() + 1).padStart(2, '0'); // month is zero-based
         const day = String(formattedDate.getDate()).padStart(2, '0');
         return `${year}-${month}-${day}`;
     }
