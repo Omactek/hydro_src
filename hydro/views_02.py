@@ -99,11 +99,8 @@ def dataseries(request, station_id, field):
     print(model)
     start_date = request.GET.get('start')
     end_date = request.GET.get('end')
-    print(start_date)
-    print(end_date)
     
-    if (start_date and end_date) or (start_date is not None):
-        print(start_date)
+    if (start_date and end_date) and (start_date is not '' and end_date is not ''):
         queryset = model.objects.filter(date_time__gte=start_date, date_time__lte=end_date).annotate(
             date=F('date_time'),
             value=F(field)

@@ -49,15 +49,19 @@ document.addEventListener("DOMContentLoaded", function() {
         dateWidget.set('maxDate', endDate);
         dateWidget.set('disable', disableDates);
         dateWidget.set('defaultDate', defaultDates);
-        alert(`updating pickr: ${startDate} and end: ${endDate}`)
     }
 
     function formatDateForBackend(date) {
-        const formattedDate = new Date(date);
-        const year = formattedDate.getFullYear();
-        const month = String(formattedDate.getMonth() + 1).padStart(2, '0'); // month is zero-based
-        const day = String(formattedDate.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
+        if (date) {
+            const formattedDate = new Date(date);
+            const year = formattedDate.getFullYear();
+            const month = String(formattedDate.getMonth() + 1).padStart(2, '0'); // month is zero-based
+            const day = String(formattedDate.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+        else {
+            return '';
+        }
     }
 
     function zoomToStation(stationId) {
@@ -116,6 +120,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 });
                 if (yearDropdown.options.length > 0) yearDropdown.selectedIndex = 0;
                 fetchDataAndRenderYearlyChart();
+                fetchDataAndRenderSeriesChart();
             })
             .catch(error => console.error('Error fetching years:', error));
     }
@@ -275,16 +280,16 @@ document.addEventListener("DOMContentLoaded", function() {
         const dateRange = [startDate, endDate];
 
         if (!stationId || !valueField) return;
-        fetch(`api/stations/${stationId}/${valueField}/dataseries/?start=${formattedStartDate}&end=${formattedEndDate}`)
+        fetch(`/api/stations/${stationId}/${valueField}/dataseries/?start=${formattedStartDate}&end=${formattedEndDate}`)
             .then(response => response.json())
             .then(responseData => {
-                console.log(responseData);
                 const minDate = responseData.min_date;
                 const maxDate = responseData.max_date;
                 const disable = responseData.disable_dates;
                 const data = responseData.data;
                 const hourlyDates = data.map(item => item.date);
                 const hourlyValues = data.map(item => item.value);
+                console.log(hourlyDates);
 
                 var hourlyTrace = {
                     x: hourlyDates,
@@ -296,10 +301,11 @@ document.addEventListener("DOMContentLoaded", function() {
                 };
 
                 var layout = {
-                    title: `Whole time series`,
+                    title: `Time series`,
                     xaxis: {
                         title: `date`,
                         type: 'date',
+                        range: hourlyDates,
                     },
                     yaxis: {
                         title: `${parLabel} [${parUnit}]`
