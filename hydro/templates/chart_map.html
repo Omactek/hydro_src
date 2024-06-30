@@ -65,5 +65,11 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     {% load static %}
     <script src="{% static 'scripts.js' %}"></script>
+    <style>
+        /* CSS style to remove outline from Leaflet markers on focus */
+        .leaflet-interactive:focus {
+            outline: none;
+        }
+    </style>
 </body>
 </html>

@@ -28,11 +28,28 @@ document.addEventListener("DOMContentLoaded", function() {
     }).addTo(map);
 
     const markers = L.markerClusterGroup({
-        // Customize options
-        maxClusterRadius: 15, // Distance in pixels within which markers will be clustered
-        spiderfyDistanceMultiplier: 1.5, // Distance factor for expanding cluster on click
-        disableClusteringAtZoom: 16 // Zoom level at which clustering is disabled
+        maxClusterRadius: 15,
+        spiderfyDistanceMultiplier: 1.5,
+        disableClusteringAtZoom: 16
     });
+
+    const markerStyle = {
+        radius: 5,
+        fillColor: "#002f61",  //008b98
+        color: "#000",
+        weight: 1,
+        opacity: 1,
+        fillOpacity: 0.7,
+    };
+
+    const highMarkerStyle = {
+        radius: 5,
+        fillColor: "#008b98", //#002f61
+        color: "#000",
+        weight: 1,
+        opacity: 1,
+        fillOpacity: 1,
+    };
 
     function zoomToStation(stationId) {
         const coordinates = stationsData[stationId];
@@ -41,35 +58,41 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
 
+    function highlightMarker(stationId) {
+        markers.eachLayer(function(layer) {
+            if (layer.feature && layer.feature.id === stationId) {
+                layer.setStyle(highMarkerStyle);
+            } else {
+                layer.setStyle(markerStyle); // Reset other markers
+            }
+        });
+    }
+
     fetch('/api/stations/geo/')
         .then(response => response.json())
         .then(data => {
             L.geoJSON(data, {
                 pointToLayer: function(feature, latlng) {
-                    return L.circleMarker(latlng, {
-                        radius: 5,
-                        fillColor: "#005f85",
-                        color: "#000",
-                        weight: 1,
-                        opacity: 1,
-                        fillOpacity: 1
+                    const marker = L.circleMarker(latlng, markerStyle);
+                    
+                    marker.bindTooltip(feature.properties.st_label, {
+                        sticky: true
                     });
-                },
-                onEachFeature: function(feature, layer) {
-                    if (feature.properties) {
-                        layer.bindPopup(`<b>${feature.properties.st_label}</b>`);
-                    }
-                    layer.on('click', function() {
+
+                    marker.on('click', function() {
                         stationDropdown.value = feature.id;
                         fetchValues();
                         zoomToStation(feature.id);
+                        highlightMarker(feature.id);
                     });
+
+                    return marker;
                 }
             }).addTo(markers);
 
             map.addLayer(markers);
 
-            // store station data for later use
+            // Store station data for later use
             data.features.forEach(feature => {
                 stationsData[feature.id] = feature.geometry.coordinates;
             });
@@ -295,7 +318,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
         const formattedStartDate = formatDateForBackend(startDate);
         const formattedEndDate = formatDateForBackend(endDate);
-        const dateRange = [startDate, endDate];
 
         if (!stationId || !valueField) return;
         fetch(`/api/stations/${stationId}/${valueField}/dataseries/?start=${formattedStartDate}&end=${formattedEndDate}`)
@@ -303,7 +325,6 @@ document.addEventListener("DOMContentLoaded", function() {
             .then(responseData => {
                 const minDate = responseData.min_date;
                 const maxDate = responseData.max_date;
-                const disable = responseData.disable_dates;
                 const data = responseData.data;
                 const hourlyDates = data.map(item => item.date);
                 const hourlyValues = data.map(item => item.value);
@@ -336,6 +357,7 @@ document.addEventListener("DOMContentLoaded", function() {
     stationDropdown.addEventListener("change", function() {
         fetchValues();
         zoomToStation(stationDropdown.value);
+        highlightMarker(stationDropdown.value);
         rangePicker.clear();
     });
 
