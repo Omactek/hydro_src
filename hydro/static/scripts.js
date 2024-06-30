@@ -27,21 +27,47 @@ document.addEventListener("DOMContentLoaded", function() {
                  '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC BY-SA</a>'
     }).addTo(map);
 
+    const markers = L.markerClusterGroup({
+        // Customize options
+        maxClusterRadius: 15, // Distance in pixels within which markers will be clustered
+        spiderfyDistanceMultiplier: 1.5, // Distance factor for expanding cluster on click
+        disableClusteringAtZoom: 16 // Zoom level at which clustering is disabled
+    });
+
+    function zoomToStation(stationId) {
+        const coordinates = stationsData[stationId];
+        if (coordinates) {
+            map.setView([coordinates[1], coordinates[0]], 16); // leaflet uses [lat, lng]
+        }
+    }
+
     fetch('/api/stations/geo/')
         .then(response => response.json())
         .then(data => {
             L.geoJSON(data, {
-                onEachFeature: function (feature, layer) {
+                pointToLayer: function(feature, latlng) {
+                    return L.circleMarker(latlng, {
+                        radius: 5,
+                        fillColor: "#005f85",
+                        color: "#000",
+                        weight: 1,
+                        opacity: 1,
+                        fillOpacity: 1
+                    });
+                },
+                onEachFeature: function(feature, layer) {
                     if (feature.properties) {
                         layer.bindPopup(`<b>${feature.properties.st_label}</b>`);
                     }
-                    layer.on('click', function () {
+                    layer.on('click', function() {
                         stationDropdown.value = feature.id;
                         fetchValues();
                         zoomToStation(feature.id);
                     });
                 }
-            }).addTo(map);
+            }).addTo(markers);
+
+            map.addLayer(markers);
 
             // store station data for later use
             data.features.forEach(feature => {
@@ -60,13 +86,6 @@ document.addEventListener("DOMContentLoaded", function() {
         }
         else {
             return '';
-        }
-    }
-
-    function zoomToStation(stationId) {
-        const coordinates = stationsData[stationId];
-        if (coordinates) {
-            map.setView([coordinates[1], coordinates[0]], 13); // leaflet uses [lat, lng]
         }
     }
 
