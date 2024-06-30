@@ -4,37 +4,27 @@ document.addEventListener("DOMContentLoaded", function() {
     const yearDropdown = document.getElementById("yearDropdown");
     const yearlyChart = document.getElementById("yearlyChart");
     const seriesChart = document.getElementById("seriesChart");
-    const startPicker = flatpickr('#startPicker', {
-        dateFormat: 'd-m-Y',
+    const rangePicker = flatpickr('#rangePicker', {
+        dateFormat: 'd.m.Y',
         minDate: '',
         maxDate: '',
         disable: [],
         defaultDate: [],
+        mode: 'range',
     }); 
-    const endPicker = flatpickr('#endPicker', {
-        dateFormat: 'd-m-Y',
-        minDate: '',
-        maxDate: '',
-        disable: [],
-        defaultDate: [],
-    });
-    function updateDatePicker(startWidget, endWidget, startDate, endDate, disableDates, defaultDate) {
-        startWidget.set('minDate', startDate);
-        startWidget.set('maxDate', endDate);
-        startWidget.set('disable', disableDates);
-        //startWidget.set('defaultDate', defaultDates);
-        endWidget.set('minDate', startDate);
-        endWidget.set('maxDate', endDate);
-        endWidget.set('disable', disableDates);
-        //endWidget.set('defaultDate', defaultDates);
+    function updateDatePicker(rangeWidget, startDate, endDate) {
+        rangeWidget.set('minDate', startDate);
+        rangeWidget.set('maxDate', endDate);
     } 
 
     let stationsData = {};
 
-    var map = L.map('map').setView([49.8175, 15.4730], 7); // centered on the Czech Republic
+    const map = L.map('map').setView([49.8175, 15.4730], 6); // centered on the Czech Republic
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, ' +
+                 '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC BY-SA</a>'
     }).addTo(map);
 
     fetch('/api/stations/geo/')
@@ -157,18 +147,18 @@ document.addEventListener("DOMContentLoaded", function() {
                 })
                     .then(response => response.json())
                     .then(percentiles => {
-                        var currentYear = new Date(hourlyDates[0]).getFullYear();
-                        var percDate = percentiles.map(d => `${currentYear}-${d.string_date_without_year}`);
-                        var q10 = percentiles.map(d => d.q10);
-                        var q20 = percentiles.map(d => d.q20);
-                        var q30 = percentiles.map(d => d.q30);
-                        var q40 = percentiles.map(d => d.q40);
-                        var q50 = percentiles.map(d => d.q50);
-                        var q60 = percentiles.map(d => d.q60);
-                        var q70 = percentiles.map(d => d.q70);
-                        var q80 = percentiles.map(d => d.q80);
-                        var q90 = percentiles.map(d => d.q90);
-                        var conTrace = {
+                        const currentYear = new Date(hourlyDates[0]).getFullYear();
+                        const percDate = percentiles.map(d => `${currentYear}-${d.string_date_without_year}`);
+                        const q10 = percentiles.map(d => d.q10);
+                        const q20 = percentiles.map(d => d.q20);
+                        const q30 = percentiles.map(d => d.q30);
+                        const q40 = percentiles.map(d => d.q40);
+                        const q50 = percentiles.map(d => d.q50);
+                        const q60 = percentiles.map(d => d.q60);
+                        const q70 = percentiles.map(d => d.q70);
+                        const q80 = percentiles.map(d => d.q80);
+                        const q90 = percentiles.map(d => d.q90);
+                        const conTrace = {
                             x: percDate,
                             y:q50,
                             fill: 'None',
@@ -179,7 +169,7 @@ document.addEventListener("DOMContentLoaded", function() {
                             hoverinfo: 'none',
                             connectgaps: true
                         }
-                        var conTrace2 = {
+                        const conTrace2 = {
                             x: percDate,
                             y:q30,
                             fill: 'None',
@@ -190,7 +180,7 @@ document.addEventListener("DOMContentLoaded", function() {
                             hoverinfo: 'none',
                             connectgaps: true
                         }
-                        var q10 = {
+                        const q10Trace = {
                             x: percDate,
                             y: q10,
                             line: {color: 'transparent'},
@@ -202,7 +192,7 @@ document.addEventListener("DOMContentLoaded", function() {
                             hoverinfo: 'y',
                             legendgroup: 'Q10 to Q90'
                         }
-                        var q30 = {
+                        const q30Trace = {
                             x: percDate,
                             y: q30,
                             line: {color: 'transparent'},
@@ -214,7 +204,7 @@ document.addEventListener("DOMContentLoaded", function() {
                             hoverinfo: 'y',
                             legendgroup: 'Q30 to Q70'
                         }
-                        var q70 = {
+                        const q70Trace = {
                             x: percDate,
                             y: q70,
                             line: {color: 'transparent'},
@@ -226,7 +216,7 @@ document.addEventListener("DOMContentLoaded", function() {
                             hoverinfo: 'y',
                             legendgroup: 'Q30 to Q70'
                         }
-                        var q90 = {
+                        const q90Trace = {
                             x: percDate,
                             y: q90,
                             fill: 'tonexty',
@@ -238,7 +228,7 @@ document.addEventListener("DOMContentLoaded", function() {
                             hoverinfo: 'y',
                             legendgroup: 'Q10 to Q90'
                         }
-                        var hourlyTrace = {
+                        const hourlyTrace = {
                             x: hourlyDates,
                             y: hourlyValues,
                             mode: 'lines',
@@ -247,7 +237,7 @@ document.addEventListener("DOMContentLoaded", function() {
                             type: 'scatter'
                         };
 
-                        var median = {
+                        const median = {
                             x: percDate,
                             y: q50,
                             mode: 'lines',
@@ -257,8 +247,8 @@ document.addEventListener("DOMContentLoaded", function() {
                             connectgaps: true
                         };
 
-                        var allTraces = [conTrace2, q10, conTrace, q30, median, q70, q90, hourlyTrace];
-                        var layout = {
+                        const allTraces = [conTrace2, q10Trace, conTrace, q30Trace, median, q70Trace, q90Trace, hourlyTrace];
+                        const layout = {
                             title: `Hourly data and monthly percentiles (all measured years)`,
                             xaxis: {
                                 title: `date (${year})`,
@@ -279,8 +269,8 @@ document.addEventListener("DOMContentLoaded", function() {
     function fetchDataAndRenderSeriesChart() {
         const stationId = stationDropdown.value;
         const valueField = valueDropdown.value;
-        const startDate = startPicker.selectedDates[0];
-        const endDate = endPicker.selectedDates[0];
+        const startDate = rangePicker.selectedDates[0];
+        const endDate = rangePicker.selectedDates[1];
         const parLabel = valueDropdown.options[valueDropdown.selectedIndex].textContent;
         const parUnit = valueDropdown.options[valueDropdown.selectedIndex].getAttribute('unit');
 
@@ -298,9 +288,8 @@ document.addEventListener("DOMContentLoaded", function() {
                 const data = responseData.data;
                 const hourlyDates = data.map(item => item.date);
                 const hourlyValues = data.map(item => item.value);
-                console.log(hourlyDates);
 
-                var hourlyTrace = {
+                const hourlyTrace = {
                     x: hourlyDates,
                     y: hourlyValues,
                     mode: 'lines',
@@ -309,19 +298,18 @@ document.addEventListener("DOMContentLoaded", function() {
                     type: 'scatter'
                 };
 
-                var layout = {
+                const layout = {
                     title: `Time series`,
                     xaxis: {
                         title: `date`,
                         type: 'date',
-                        range: hourlyDates,
                     },
                     yaxis: {
                         title: `${parLabel} [${parUnit}]`
                     }
                 };
                 Plotly.newPlot(seriesChart, [hourlyTrace], layout);
-                updateDatePicker(startPicker, endPicker, minDate, maxDate, disable, dateRange);
+                updateDatePicker(rangePicker, minDate, maxDate);
             }
         ).catch(error => console.error('Error fetching chart data:', error)); 
     }
@@ -329,14 +317,21 @@ document.addEventListener("DOMContentLoaded", function() {
     stationDropdown.addEventListener("change", function() {
         fetchValues();
         zoomToStation(stationDropdown.value);
+        rangePicker.clear();
     });
 
     function fetchDataAndRenderBothCharts() {
         fetchDataAndRenderYearlyChart();
+        rangePicker.clear();
         fetchDataAndRenderSeriesChart();
     }
 
     valueDropdown.addEventListener("change", fetchDataAndRenderBothCharts);
     yearDropdown.addEventListener("change", fetchDataAndRenderYearlyChart);
     fetchStations();
+    rangePicker.set('onChange', function() {
+        if( rangePicker.selectedDates.length === 2) {
+            fetchDataAndRenderSeriesChart();
+        }
+    });
 });
