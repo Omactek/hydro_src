@@ -2,108 +2,78 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Station Map and Chart</title>
+    <title>Monitoring of natural processes</title>
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
-    <style>
-        /* Custom CSS for map and charts */
-        #map {
-            height: 400px; /* Adjust height as needed */
-            border: 2px solid #ccc;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            margin: 10px;
-        }
-
-        #seriesChart {
-            height: 300px; /* Adjust height as needed */
-            margin-top: 20px;
-        }
-
-        .card-dropdowns {
-            background-color: #f2f2f2; /* Light grey background */
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            margin-bottom: 10px;
-        }
-
-        .card {
-            border: none;
-            outline: none;
-            margin: 10px;
-        }
-        
-        
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
+    <style>        
     </style>
 </head>
 <body>
     <div class="container-fluid">
         <h3>Monitoring of natural processes</h3>
-    </div>
-        <!-- First Row: Yearly Dropdowns and Chart -->
+        
+        <!-- Yearly Dropdowns Row -->
         <div class="row mb-3">
-            <div class="col-lg-4">
+            <div class="col-12">
                 <div class="card">
                     <div class="card-dropdowns">
                         <h5 class="card-title">Yearly Dropdowns</h5>
                         <form id="stationForm">
-                            <div class="form-group">
-                                <label for="stationDropdown">Station:</label>
-                                <select id="stationDropdown" class="form-control">
-                                    <option value="1">Station A</option>
-                                    <option value="2">Station B</option>
-                                    <option value="3">Station C</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="valueDropdown">Value:</label>
-                                <select id="valueDropdown" class="form-control">
-                                    <option value="temperature">Temperature</option>
-                                    <option value="humidity">Humidity</option>
-                                    <option value="pressure">Pressure</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="yearDropdown">Year:</label>
-                                <select id="yearDropdown" class="form-control">
-                                    <option value="2023">2023</option>
-                                    <option value="2022">2022</option>
-                                    <option value="2021">2021</option>
-                                </select>
+                            <div class="form-row">
+                                <div class="form-group col-md-4">
+                                    <label for="stationDropdown">Station:</label>
+                                    <select id="stationDropdown" class="form-control">
+                                    </select>
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label for="valueDropdown">Value:</label>
+                                    <select id="valueDropdown" class="form-control">
+                                    </select>
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label for="yearDropdown">Year:</label>
+                                    <select id="yearDropdown" class="form-control">
+                                    </select>
+                                </div>
                             </div>
                         </form>
                     </div>
                 </div>
             </div>
+        </div>
+
+        <!-- Map and Yearly Chart Row -->
+        <div class="row">
+            <div class="col-lg-4">
+                <div id="map"></div>
+            </div>
             <div class="col-lg-8">
                 <div class="card">
                     <div class="card-chart">
-                        <div id="yearlyChart">Yearly Chart Placeholder</div>
+                        <div id="yearlyChart"></div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Second Row: Map and Date Picker with Series Chart -->
-        <div class="row">
-            <div class="col-lg-4">
-                <div id="map">Map Placeholder</div>
-            </div>
-            <div class="col-lg-8">
+        <!-- Date Range Picker and Series Chart Row -->
+        <div class="row mt-3">
+            <div class="col-lg-2">
                 <div class="card">
-                    <div class="card-body">
-                        <div class="date-picker-section">
-                            <h5 class="card-title">Choose a date range</h5>
-                            <input type="text" id="rangePicker" class="form-control mb-3" placeholder="Select date range">
-                        </div>
-                        <div class="card">
-                            <div class="card-Chart">
-                                <div id="seriesChart">Series Chart Placeholder</div>
-                            </div>
-                        </div>
+                    <div class="date-picker-section">
+                        <h5 class="card-title">Choose a date range</h5>
+                        <input type="text" id="rangePicker" class="form-control mb-3" placeholder="Select date range">
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-10">
+                <div class="card">
+                    <div class="card-chart">
+                        <div id="seriesChart"></div>
                     </div>
                 </div>
             </div>
@@ -114,27 +84,18 @@
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
-    <!-- Leaflet JS -->
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <!-- Leaflet Marker Cluster JS -->
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
+
     <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster-src.js"></script>
-    <!-- Plotly JS -->
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-    <!-- Flatpickr JS -->
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <!-- Your custom JavaScript -->
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            // Placeholder content, replace with actual map initialization, data fetching, and chart rendering
-            const mapPlaceholder = document.getElementById('map');
-            mapPlaceholder.innerHTML = "Map Content"; // Replace with actual map initialization code
+    <script src="{% static 'scripts.js' %}"></script>
 
-            const yearlyChartPlaceholder = document.getElementById('yearlyChart');
-            yearlyChartPlaceholder.innerHTML = "Yearly Chart Content"; // Replace with actual chart rendering code
-
-            const seriesChartPlaceholder = document.getElementById('seriesChart');
-            seriesChartPlaceholder.innerHTML = "Series Chart Content"; // Replace with actual chart rendering code
-        });
-    </script>
 </body>
 </html>

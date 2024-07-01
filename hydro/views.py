@@ -134,3 +134,6 @@ def chart_map(request):
 
 def test(request):
     return render(request, 'bootstrap_template.html')
+
+def test_2(request):
+    return render(request, 'tmlp_2.html')

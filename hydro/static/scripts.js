@@ -34,7 +34,7 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 
     const markerStyle = {
-        radius: 5,
+        radius: 6,
         fillColor: "#002f61",  //008b98
         color: "#000",
         weight: 1,
@@ -43,8 +43,8 @@ document.addEventListener("DOMContentLoaded", function() {
     };
 
     const highMarkerStyle = {
-        radius: 5,
-        fillColor: "#008b98", //#002f61
+        radius: 6,
+        fillColor: "#39be74", //#002f61
         color: "#000",
         weight: 1,
         opacity: 1,

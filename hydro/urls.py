@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import StationMetadataViewSet, chart_data, ValuesMetadataViewSet, chart_map, get_percentiles, dataseries, test
+from .views import StationMetadataViewSet, chart_data, ValuesMetadataViewSet, chart_map, get_percentiles, dataseries, test, test_2
 
 router = DefaultRouter()
 router.register(r'stations', StationMetadataViewSet)
@@ -13,4 +13,5 @@ urlpatterns = [
     path('api/stations/<str:station_id>/<str:field>/percentiles/', get_percentiles, name='get_percentiles'),
     path('api/stations/<str:station_id>/<str:field>/dataseries/', dataseries, name='get_dataseries'),
     path('test/', test, name='test'),
+    path('test2/', test_2, name='test2'),
 ]
