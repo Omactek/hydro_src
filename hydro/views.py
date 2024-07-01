@@ -98,28 +98,29 @@ def dataseries(request, station_id, field):
     model = StationMetadataViewSet.get_model_from_table(station_id)
     start_date = request.GET.get('start')
     end_date = request.GET.get('end')
+
+    first_non_null_date = model.objects.filter(**{f"{field}__isnull": False}).aggregate(min_date=Min('date_time'))['min_date']
+    last_non_null_date = model.objects.filter(**{f"{field}__isnull": False}).aggregate(max_date=Max('date_time'))['max_date']
     
-    if (start_date and end_date) and (start_date is not '' and end_date is not ''):
+    if (start_date and end_date) and (start_date != '' and end_date != ''):
         queryset = model.objects.filter(
             date_time__gte=start_date,
             date_time__lte=end_date
-        ).exclude(
-            **{f"{field}__isnull": True}
         ).annotate(
             date=F('date_time'),
             value=F(field)
         ).values('date', 'value').order_by('date')
     else: #will probably crash if opened through browser
-        queryset = model.objects.exclude(
-            **{f"{field}__isnull": True}
+        queryset = model.objects.filter(
+            date_time__gte=first_non_null_date,
+            date_time__lte=last_non_null_date
         ).annotate(
             date=F('date_time'),
             value=F(field)
         ).values('date', 'value').order_by('date')
 
-    objects_with_field = model.objects.filter(**{f'{field}__isnull': False})
-    min_date = objects_with_field.aggregate(min_date=Min('date_time'))['min_date'].strftime('%d-%m-%Y')
-    max_date = objects_with_field.aggregate(max_date=Max('date_time'))['max_date'].strftime('%d-%m-%Y')
+    min_date = first_non_null_date.strftime('%d-%m-%Y')
+    max_date = last_non_null_date.strftime('%d-%m-%Y')
 
     response_data = {
         "min_date": min_date,

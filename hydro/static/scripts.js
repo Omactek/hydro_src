@@ -335,7 +335,8 @@ document.addEventListener("DOMContentLoaded", function() {
                     mode: 'lines',
                     name: 'Hourly Values',
                     line: {color: 'blue'},
-                    type: 'scatter'
+                    type: 'scatter',
+                    connectgaps: false
                 };
 
                 const layout = {
