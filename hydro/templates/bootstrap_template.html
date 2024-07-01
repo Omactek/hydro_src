@@ -3,73 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <title>Monitoring of natural processes</title>
-    <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
-    <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
-    <style>
-        /* Custom CSS for map and charts */
-        #map {
-            height: 400px; /* Adjust height as needed */
-            border: 2px solid #ccc;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            margin: 10px;
-        }
-
-        .card-dropdowns {
-            background-color: #f2f2f2; /* Light grey background */
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            margin-bottom: 10px;
-        }
-
-        .card {
-            border: none;
-            outline: none;
-            margin: 10px;
-        }
-        
-        .leaflet-interactive:focus {
-            outline: none;
-        }
-        
-    </style>
+    {% load static %}
+    <!-- CSS file -->
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
 </head>
 <body>
     <div class="container-fluid">
         <h3>Monitoring of natural processes</h3>
-    </div>
-        <!-- First Row: Yearly Dropdowns and Chart -->
-        <div class="row mb-3">
-            <div class="col-lg-4">
+        
+        <!-- Sticky Row: Yearly Dropdowns and Date Picker -->
+        <div class="row mb-3 selection-row">
+            <div class="col-lg-9">
                 <div class="card">
                     <div class="card-dropdowns">
                         <h5 class="card-title">Yearly Dropdowns</h5>
                         <form id="stationForm">
-                            <div class="form-group">
-                                <label for="stationDropdown">Station:</label>
-                                <select id="stationDropdown" class="form-control">
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="valueDropdown">Value:</label>
-                                <select id="valueDropdown" class="form-control">
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="yearDropdown">Year:</label>
-                                <select id="yearDropdown" class="form-control">
-                                </select>
+                            <div class="form-row">
+                                <div class="form-group col-md-4 d-flex align-items-center">
+                                    <label for="stationDropdown" class="mr-2">Station:</label>
+                                    <select id="stationDropdown" class="form-control">
+                                    </select>
+                                </div>
+                                <div class="form-group col-md-4 d-flex align-items-center">
+                                    <label for="valueDropdown" class="mr-2">Value:</label>
+                                    <select id="valueDropdown" class="form-control">
+                                    </select>
+                                </div>
+                                <div class="form-group col-md-4 d-flex align-items-center">
+                                    <label for="yearDropdown" class="mr-2">Year:</label>
+                                    <select id="yearDropdown" class="form-control">
+                                    </select>
+                                </div>
                             </div>
                         </form>
-                        <div class="date-picker-section">
-                            <h5 class="card-title">Choose a date range</h5>
-                            <input type="text" id="rangePicker" class="form-control mb-3" placeholder="Select date range">
-                        </div>
                     </div>
                 </div>
+            </div>
+            <div class="col-lg-3">
+                <div class="card">
+                    <div class="date-picker-section">
+                        <h5 class="card-title">Choose a date range</h5>
+                        <input type="text" id="rangePicker" class="form-control mb-3">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Map and Yearly Chart Row -->
+        <div class="row">
+            <div class="col-lg-4">
+                <div id="map"></div>
             </div>
             <div class="col-lg-8">
                 <div class="card">
@@ -80,12 +65,9 @@
             </div>
         </div>
 
-        <!-- Second Row: Map and Date Picker with Series Chart -->
+        <!-- Full Width Series Chart Row -->
         <div class="row">
-            <div class="col-lg-4">
-                <div id="map"></div>
-            </div>
-            <div class="col-lg-8">
+            <div class="col-12">
                 <div class="card">
                     <div class="card-chart">
                         <div id="seriesChart"></div>
@@ -100,18 +82,22 @@
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
     
+    <!-- Leaflet -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
+    <!-- MarkerCluster -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
-
     <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster-src.js"></script>
+
+    <!-- Plotly.js -->
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-    
+
+    <!-- Flatpickr -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    {% load static %}
-    <script src="{% static 'scripts.js' %}"></script>
 
+    <!-- JS file -->
+    <script src="{% static 'scripts.js' %}"></script>
 </body>
 </html>
