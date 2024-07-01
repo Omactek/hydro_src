@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Monitoring of natural processes</title>
+    <title>Station Map and Chart</title>
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
     <!-- Leaflet CSS -->
@@ -15,6 +15,11 @@
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             margin: 10px;
+        }
+
+        #seriesChart {
+            height: 300px; /* Adjust height as needed */
+            margin-top: 20px;
         }
 
         .card-dropdowns {
@@ -31,9 +36,6 @@
             margin: 10px;
         }
         
-        .leaflet-interactive:focus {
-            outline: none;
-        }
         
     </style>
 </head>
@@ -51,30 +53,35 @@
                             <div class="form-group">
                                 <label for="stationDropdown">Station:</label>
                                 <select id="stationDropdown" class="form-control">
+                                    <option value="1">Station A</option>
+                                    <option value="2">Station B</option>
+                                    <option value="3">Station C</option>
                                 </select>
                             </div>
                             <div class="form-group">
                                 <label for="valueDropdown">Value:</label>
                                 <select id="valueDropdown" class="form-control">
+                                    <option value="temperature">Temperature</option>
+                                    <option value="humidity">Humidity</option>
+                                    <option value="pressure">Pressure</option>
                                 </select>
                             </div>
                             <div class="form-group">
                                 <label for="yearDropdown">Year:</label>
                                 <select id="yearDropdown" class="form-control">
+                                    <option value="2023">2023</option>
+                                    <option value="2022">2022</option>
+                                    <option value="2021">2021</option>
                                 </select>
                             </div>
                         </form>
-                        <div class="date-picker-section">
-                            <h5 class="card-title">Choose a date range</h5>
-                            <input type="text" id="rangePicker" class="form-control mb-3" placeholder="Select date range">
-                        </div>
                     </div>
                 </div>
             </div>
             <div class="col-lg-8">
                 <div class="card">
                     <div class="card-chart">
-                        <div id="yearlyChart"></div>
+                        <div id="yearlyChart">Yearly Chart Placeholder</div>
                     </div>
                 </div>
             </div>
@@ -83,12 +90,20 @@
         <!-- Second Row: Map and Date Picker with Series Chart -->
         <div class="row">
             <div class="col-lg-4">
-                <div id="map"></div>
+                <div id="map">Map Placeholder</div>
             </div>
             <div class="col-lg-8">
                 <div class="card">
-                    <div class="card-chart">
-                        <div id="seriesChart"></div>
+                    <div class="card-body">
+                        <div class="date-picker-section">
+                            <h5 class="card-title">Choose a date range</h5>
+                            <input type="text" id="rangePicker" class="form-control mb-3" placeholder="Select date range">
+                        </div>
+                        <div class="card">
+                            <div class="card-Chart">
+                                <div id="seriesChart">Series Chart Placeholder</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -99,19 +114,27 @@
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
-    
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
-
+    <!-- Leaflet Marker Cluster JS -->
     <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster-src.js"></script>
+    <!-- Plotly JS -->
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-    
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <!-- Flatpickr JS -->
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    {% load static %}
-    <script src="{% static 'scripts.js' %}"></script>
+    <!-- Your custom JavaScript -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Placeholder content, replace with actual map initialization, data fetching, and chart rendering
+            const mapPlaceholder = document.getElementById('map');
+            mapPlaceholder.innerHTML = "Map Content"; // Replace with actual map initialization code
 
+            const yearlyChartPlaceholder = document.getElementById('yearlyChart');
+            yearlyChartPlaceholder.innerHTML = "Yearly Chart Content"; // Replace with actual chart rendering code
+
+            const seriesChartPlaceholder = document.getElementById('seriesChart');
+            seriesChartPlaceholder.innerHTML = "Series Chart Content"; // Replace with actual chart rendering code
+        });
+    </script>
 </body>
 </html>

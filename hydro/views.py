@@ -101,7 +101,7 @@ def dataseries(request, station_id, field):
 
     first_non_null_date = model.objects.filter(**{f"{field}__isnull": False}).aggregate(min_date=Min('date_time'))['min_date']
     last_non_null_date = model.objects.filter(**{f"{field}__isnull": False}).aggregate(max_date=Max('date_time'))['max_date']
-    
+
     if (start_date and end_date) and (start_date != '' and end_date != ''):
         queryset = model.objects.filter(
             date_time__gte=start_date,
@@ -133,4 +133,4 @@ def chart_map(request):
     return render(request, 'chart_map.html')
 
 def test(request):
-    return render(request, 'test.html')
+    return render(request, 'bootstrap_template.html')
